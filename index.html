@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="es"><head>
+<html lang="es">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Pool de Supervisores</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&amp;family=Source+Sans+3:wght@400;600&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap">
 <style>
 /* Layout: encabezado con tablero + barra de filtros + grilla de fichas; perfil, agenda y admin en diálogos */
 :root{
@@ -111,7 +112,9 @@ footer .wrap{padding-block:18px 30px;display:flex;justify-content:space-between;
 #adminbar b{font-family:var(--display);margin-right:auto;display:flex;align-items:center;gap:10px}
 #adminbar .btn{background:transparent;color:#fff;border-color:#4B5D78}
 #adminbar .btn.save{background:#fff;color:var(--ink);border-color:#fff}
-#dirty{font:600 12px var(--body);background:#F2B34B;color:#3A2600;border-radius:99px;padding:2px 9px}
+#saving{font:600 12px var(--body);background:#F2B34B;color:#3A2600;border-radius:99px;padding:2px 9px}
+.loading{opacity:.6;pointer-events:none}
+button:disabled{opacity:.6;cursor:wait}
 body.admin .toolbar{top:56px}
 .admin-only{display:none !important}
 body.admin .admin-only{display:revert !important}
@@ -125,13 +128,12 @@ body.admin .hm-only{display:none !important}
 
 <div id="adminbar" class="admin-only">
   <div class="wrap">
-    <b>Modo TA <span id="dirty" hidden="">Cambios sin guardar</span></b>
+    <b>Modo TA <span id="saving" hidden>Guardando…</span></b>
     <button class="btn small" id="btnAdd" type="button">+ Agregar candidato</button>
     <button class="btn small" id="btnImport" type="button">Cargar Excel</button>
     <button class="btn small" id="btnSettings" type="button">Configuración</button>
-    <button class="btn small save" id="btnSave" type="button">Guardar cambios</button>
     <button class="btn small" id="btnExit" type="button">Salir</button>
-    <input type="file" id="xlsFile" accept=".xlsx,.xls,.csv" hidden="">
+    <input type="file" id="xlsFile" accept=".xlsx,.xls,.csv" hidden>
   </div>
 </div>
 
@@ -170,15 +172,15 @@ body.admin .hm-only{display:none !important}
 
 <!-- Acceso TA -->
 <dialog id="dlgLogin" class="narrow" aria-labelledby="lTitle">
-  <div class="dlg-head"><h2 id="lTitle">Acceso TA</h2><button class="x" data-close="" aria-label="Cerrar">×</button></div>
-  <form id="fLogin" novalidate="">
+  <div class="dlg-head"><h2 id="lTitle">Acceso TA</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fLogin" novalidate>
     <div class="dlg-body">
       <p class="muted" id="lHelp" style="margin:0 0 12px;font-size:14px">Solo para el equipo de Talent Acquisition.</p>
       <label>Contraseña<input id="lPass" type="password" autocomplete="current-password"></label>
-      <label id="lConfWrap" hidden="">Repite la contraseña<input id="lConf" type="password" autocomplete="new-password"></label>
+      <label id="lConfWrap" hidden>Repite la contraseña<input id="lConf" type="password" autocomplete="new-password"></label>
       <div class="err" id="lErr" role="alert"></div>
     </div>
-    <div class="dlg-foot"><button class="btn" data-close="" type="button">Cancelar</button><button class="btn primary" type="submit" id="lBtn">Entrar</button></div>
+    <div class="dlg-foot"><button class="btn" data-close type="button">Cancelar</button><button class="btn primary" type="submit" id="lBtn">Entrar</button></div>
   </form>
 </dialog>
 
@@ -189,7 +191,7 @@ body.admin .hm-only{display:none !important}
       <div class="av" id="dAv"></div>
       <div><h2 id="dName"></h2><p class="sub" id="dSub"></p></div>
     </div>
-    <button class="x" data-close="" aria-label="Cerrar">×</button>
+    <button class="x" data-close aria-label="Cerrar">×</button>
   </div>
   <div class="dlg-body">
     <div class="pills" id="dPills"></div>
@@ -221,7 +223,7 @@ body.admin .hm-only{display:none !important}
     </div>
   </div>
   <div class="dlg-foot">
-    <button class="btn" data-close="" type="button">Cerrar</button>
+    <button class="btn" data-close type="button">Cerrar</button>
     <button class="btn admin-only" id="dEdit" type="button">Editar</button>
     <button class="btn primary hm-only" id="dSchedule" type="button">Quiero agendar entrevista</button>
   </div>
@@ -229,8 +231,8 @@ body.admin .hm-only{display:none !important}
 
 <!-- Agendar -->
 <dialog id="dlgSched" aria-labelledby="sTitle">
-  <div class="dlg-head"><div><h2 id="sTitle">Solicitar entrevista</h2><p class="sub" id="sSub"></p></div><button class="x" data-close="" aria-label="Cerrar">×</button></div>
-  <form id="fSched" novalidate="">
+  <div class="dlg-head"><div><h2 id="sTitle">Solicitar entrevista</h2><p class="sub" id="sSub"></p></div><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fSched" novalidate>
     <div class="dlg-body" id="sForm">
       <div class="row">
         <label>Tu nombre<input id="sHm" autocomplete="name"></label>
@@ -248,28 +250,28 @@ body.admin .hm-only{display:none !important}
       <label>Comentarios <small>(opcional)</small><textarea id="sNotes" placeholder="Para qué vacante o equipo, qué te gustaría validar..."></textarea></label>
       <div class="err" id="sErr" role="alert"></div>
     </div>
-    <div class="dlg-body" id="sDone" hidden="">
+    <div class="dlg-body" id="sDone" hidden>
       <div class="ok-box">
         <div class="big">✓</div>
         <h2 id="sDoneTitle">Solicitud enviada</h2>
         <p class="muted" id="sDoneText"></p>
       </div>
-      <p class="muted" id="sBackup" style="font-size:13px;text-align:center;margin:14px 0 0" hidden="">¿No se abrió Outlook? <a href="#" id="sMailto">Abrir con mi app de correo</a> · <a href="#" id="sOutlook2" target="_blank" rel="noopener">Abrir Outlook web</a></p>
+      <p class="muted" id="sBackup" style="font-size:13px;text-align:center;margin:14px 0 0" hidden>¿No se abrió Outlook? <a href="#" id="sMailto">Abrir con mi app de correo</a> · <a href="#" id="sOutlook2" target="_blank" rel="noopener">Abrir Outlook web</a></p>
     </div>
     <div class="dlg-foot">
       <span id="sFootForm" style="display:contents">
-        <button class="btn" data-close="" type="button">Cancelar</button>
+        <button class="btn" data-close type="button">Cancelar</button>
         <button class="btn primary" type="submit" id="sSend">Enviar solicitud</button>
       </span>
-      <span id="sFootDone" style="display:none"><button class="btn primary" data-close="" type="button">Listo</button></span>
+      <span id="sFootDone" style="display:none"><button class="btn primary" data-close type="button">Listo</button></span>
     </div>
   </form>
 </dialog>
 
 <!-- Editar candidato -->
 <dialog id="dlgEdit" aria-labelledby="eTitle">
-  <div class="dlg-head"><h2 id="eTitle">Candidato</h2><button class="x" data-close="" aria-label="Cerrar">×</button></div>
-  <form id="fEdit" novalidate="">
+  <div class="dlg-head"><h2 id="eTitle">Candidato</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fEdit" novalidate>
     <div class="dlg-body">
       <div class="row"><label>Nombre<input id="eNombre"></label><label>ID<input id="eId" placeholder="SUP-001"></label></div>
       <div class="row"><label>Estado<select id="eEstado"></select></label><label>Fecha de ingreso al pool<input id="eIngreso" type="date"></label></div>
@@ -285,7 +287,7 @@ body.admin .hm-only{display:none !important}
     <div class="dlg-foot">
       <button class="btn danger" type="button" id="eDelete">Eliminar</button>
       <span style="flex:1"></span>
-      <button class="btn" data-close="" type="button">Cancelar</button>
+      <button class="btn" data-close type="button">Cancelar</button>
       <button class="btn primary" type="submit">Guardar</button>
     </div>
   </form>
@@ -293,8 +295,8 @@ body.admin .hm-only{display:none !important}
 
 <!-- Configuración -->
 <dialog id="dlgSettings" aria-labelledby="cTitle">
-  <div class="dlg-head"><h2 id="cTitle">Configuración</h2><button class="x" data-close="" aria-label="Cerrar">×</button></div>
-  <form id="fSettings" novalidate="">
+  <div class="dlg-head"><h2 id="cTitle">Configuración</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fSettings" novalidate>
     <div class="dlg-body">
       <h3 style="margin-top:0">Encabezado de la página</h3>
       <label>Etiqueta superior<input id="cEyebrow"></label>
@@ -302,91 +304,82 @@ body.admin .hm-only{display:none !important}
       <label>Texto debajo del nombre<textarea id="cSub" rows="2"></textarea></label>
       <h3>Solicitudes de entrevista</h3>
       <label>Correos que reciben las solicitudes <small>(separados por coma)</small><input id="cMails" placeholder="dani@empresa.com, mari@empresa.com"></label>
-      <p class="muted" style="font-size:13px;margin:-4px 0 0">Cuando un supervisor pide entrevista, se le abre Outlook con el correo para estas personas ya escrito.</p>
+      <p class="muted" style="font-size:13px;margin:-4px 0 0">Cuando un supervisor pide entrevista, el correo les llega solo a estas personas y queda registrado en la pestaña Solicitudes de tu hoja.</p>
       <h3>Cambiar contraseña de acceso TA <span style="font-weight:500;text-transform:none;letter-spacing:0">(opcional)</span></h3>
       <div class="row"><label>Nueva contraseña<input id="cPass" type="password" autocomplete="new-password"></label><label>Repítela<input id="cPass2" type="password" autocomplete="new-password"></label></div>
       <div class="err" id="cErr" role="alert"></div>
     </div>
-    <div class="dlg-foot"><button class="btn" data-close="" type="button">Cancelar</button><button class="btn primary" type="submit">Aplicar</button></div>
+    <div class="dlg-foot"><button class="btn" data-close type="button">Cancelar</button><button class="btn primary" type="submit">Aplicar</button></div>
   </form>
 </dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script id="pool-data" type="application/json">
-{"savedAt":"2026-10-15T00:55:45.005Z","config":{"eyebrow":"Talent Acquisition · Supervisores","title":"Pool de Supervisores","subtitle":"Candidatos a supervisor pre-evaluados por TA. Revisa sus perfiles y solicita entrevista con el que te interese.","emails":["maria.solorzano@solvoglobal.com"],"levels":["Jr","Specialist","Senior"],"estados":["Disponible","En proceso","Revalidar","Contratado","Descartado"],"modalidades":["Presencial","Híbrido","Remoto"],"ingles":["B1","B2","C1","C2"]},"stats":{"total":1,"disponibles":1,"proceso":0,"contratados":0},"vault":{"s":"bxryD4IqmAV+6jya94g7wQ==","iv":"07fgVLwRn0UOmTly","ct":"UE5JbjA083TW1YBF3WWK92sXiux58Vw4HGSB+Rly/ttUEYZ1oLIqesv1HlpXWtBYbWMmyxtvDGS3YC+tjM102KWw0MwBJar/pJ2ZxCv3JvvJ4hpzBlYPVGbeFy5XPESOluF5PtDHxsL3hVD7sY9YR//TF99ktztGkaf4GXiRAcRzU36b/mBTqTJuSWq/TlVODXNTTKZ6dp55VmXSNV5v4QRQ3AiFniwvilOqFfuv8tPSdzXJMg4yVkjOjvJ3XyV60z8+0Zsg6SDVpW0BxiSgjzjeyXhZx9d/Rf4kIm4EMezVDPsblTHaZnRmanFPDbXX5+NTDfs+Ck+wxytM4vmaXkJP+hOHjvifzAMxCocUCaG/R+X5RLpk16ZO0O6nDoiQvTSMy+kkrJMpXtTSpT+DBnCMUJBkLkahsTQLsOhv43W6kdVMcw=="},"candidates":[{"id":"SUP-001","nombre":"ddd","estado":"Disponible","ingreso":"2026-10-14","pais":"Colombia","ciudad":"Medellin","modalidad":"Híbrido","disponibilidad":"1 semana","ingles":"B2","expectativa":2500000,"nivel":"Jr","resumen":"","why":"","video":"","cv":""}]}
-</script>
-
+<script src="config.js"></script>
 <script>
 (function(){
   "use strict";
-  // Copia limpia del documento, para generar el archivo actualizado al guardar
-  var PRISTINE = "<!doctype html>\n" + document.documentElement.outerHTML;
-  var PUB = JSON.parse(document.getElementById("pool-data").textContent);
-  var C = PUB.config;
-  var FULL = null;        // datos completos (solo TA, tras ingresar la contraseña)
-  var SESSION = null;     // {key, salt}
-  var dirty = false, current = null, editing = null;
+  var ENDPOINT = String(window.POOL_ENDPOINT || "").trim();
+  var C = {eyebrow:"", title:"Pool de Supervisores", subtitle:"", emails:[]};
+  var OPT = {levels:["Jr","Specialist","Senior"], estados:["Disponible","En proceso","Revalidar","Contratado","Descartado"], modalidades:["Presencial","Híbrido","Remoto"], ingles:["B1","B2","C1","C2"]};
+  var PUB = null, ADM = null, TOKEN = null;
+  var current = null, editing = null, loaded = false;
   var VISIBLE = ["Disponible","En proceso"];
-  var DRAFT_KEY = "pool-sups-draft-v3";
 
   var $ = function(id){ return document.getElementById(id); };
   var esc = function(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); };
   var money = function(n){ return n ? "$" + Number(n).toLocaleString("es-CO") : "—"; };
   var initials = function(n){ return (n||"?").split(/\s+/).filter(Boolean).slice(0,2).map(function(w){ return w[0]; }).join("").toUpperCase(); };
-  var isAdmin = function(){ return !!FULL; };
+  var isAdmin = function(){ return !!ADM; };
   var today = function(){ var d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
   function loc(c){ return [c.ciudad, c.pais].filter(Boolean).join(", "); }
   function fmtDate(iso){
     if(!iso) return "—";
-    if(iso.length > 10){ var d = new Date(iso); iso = new Date(d.getTime() - d.getTimezoneOffset()*6e4).toISOString(); }
-    var p = iso.slice(0,10).split("-"), m = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    var p = String(iso).slice(0,10).split("-"), m = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    if(p.length < 3) return String(iso);
     return Number(p[2]) + " " + m[Number(p[1])-1] + " " + p[0];
   }
-  function daysIn(iso){ return iso ? Math.floor((Date.now() - Date.parse(iso+"T00:00:00")) / 864e5) : null; }
+  function daysIn(iso){ return iso ? Math.floor((Date.now() - Date.parse(String(iso).slice(0,10)+"T00:00:00")) / 864e5) : null; }
   function lvClass(l){ return "pill lv-" + String(l||"").replace(/\s/g,""); }
   function stClass(s){ return "pill st-" + String(s||"").replace(/\s/g,""); }
   function avColors(l){ return l==="Jr" ? "background:var(--jr-soft);color:var(--jr)" : l==="Senior" ? "background:var(--sr-soft);color:var(--sr)" : "background:var(--sp-soft);color:var(--sp)"; }
-  function list(){ return isAdmin() ? FULL.candidates : PUB.candidates; }
+  function list(){ var d = ADM || PUB; return d ? d.candidates : []; }
   function byId(id){ return list().filter(function(c){ return c.id === id; })[0]; }
-  function toast(msg){
+  function toast(msg, bad){
     var n = document.createElement("div"); n.className = "toast"; n.setAttribute("role","status"); n.textContent = msg;
-    document.body.appendChild(n); setTimeout(function(){ n.remove(); }, 3800);
+    if(bad){ n.style.background = "var(--bad-soft)"; n.style.color = "var(--bad)"; }
+    document.body.appendChild(n); setTimeout(function(){ n.remove(); }, 4200);
   }
+  function ssGet(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
+  function ssSet(k, v){ try { if(v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch(e){} }
 
-  // ---------- Cifrado (los datos internos de TA viajan cifrados dentro del archivo)
-  var te = new TextEncoder(), td = new TextDecoder();
-  function b64(buf){ var s = "", b = new Uint8Array(buf); for(var i=0;i<b.length;i+=0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i+0x8000)); return btoa(s); }
-  function unb64(s){ var bin = atob(s), b = new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) b[i] = bin.charCodeAt(i); return b; }
-  function cryptoOk(){ return !!(window.crypto && crypto.subtle); }
-  function deriveKey(pass, salt){
-    return crypto.subtle.importKey("raw", te.encode(pass), "PBKDF2", false, ["deriveKey"]).then(function(base){
-      return crypto.subtle.deriveKey({name:"PBKDF2", salt:salt, iterations:200000, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
-    });
+  // ---------- Conexión con la hoja (Apps Script)
+  function api(action, data){
+    if(!ENDPOINT) return Promise.reject({error:"Falta pegar la URL del Apps Script en config.js."});
+    var body = Object.assign({action:action, token:TOKEN}, data || {});
+    return fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body)})
+      .then(function(r){ return r.json(); }, function(){ throw {error:"No hay conexión con la hoja. Revisa tu internet e inténtalo de nuevo."}; })
+      .then(function(j){ if(!j || !j.ok) throw j || {error:"Respuesta vacía"}; return j; });
   }
-  function seal(obj){
-    var iv = crypto.getRandomValues(new Uint8Array(12));
-    return crypto.subtle.encrypt({name:"AES-GCM", iv:iv}, SESSION.key, te.encode(JSON.stringify(obj))).then(function(ct){
-      return {s:b64(SESSION.salt), iv:b64(iv), ct:b64(ct)};
-    });
-  }
-  function open(key, v){
-    return crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(v.iv)}, key, unb64(v.ct)).then(function(pt){ return JSON.parse(td.decode(pt)); });
+  function errText(e){ return (e && e.error) || "Algo salió mal. Inténtalo de nuevo."; }
+  function adminCall(action, data){
+    $("saving").hidden = false; document.body.classList.add("busy");
+    return api(action, data).then(function(j){
+      ADM = j; C = j.config || C; applyHeader(); refreshFilters(); render(); return j;
+    }, function(e){
+      if(e && e.error === "auth"){ toast("Tu sesión TA expiró. Vuelve a entrar.", true); leaveAdmin(); }
+      throw e;
+    }).finally(function(){ $("saving").hidden = true; document.body.classList.remove("busy"); });
   }
 
   // ---------- Encabezado y tablero
   function applyHeader(){
-    $("hEyebrow").textContent = C.eyebrow || "";
-    $("hEyebrow").hidden = !C.eyebrow;
+    $("hEyebrow").textContent = C.eyebrow || ""; $("hEyebrow").hidden = !C.eyebrow;
     $("hTitle").textContent = C.title || "Pool de Supervisores";
     $("hSub").textContent = C.subtitle || "";
     document.title = C.title || "Pool de Supervisores";
   }
-  function computeStats(arr){
-    var n = function(e){ return arr.filter(function(c){ return c.estado === e; }).length; };
-    return {total:arr.length, disponibles:n("Disponible"), proceso:n("En proceso"), contratados:n("Contratado")};
-  }
   function renderStats(){
-    var S = isAdmin() ? computeStats(FULL.candidates) : (PUB.stats || computeStats(PUB.candidates));
+    var d = ADM || PUB, S = (d && d.stats) || {total:"–", disponibles:"–", proceso:"–", contratados:"–"};
     var st = function(n, label, color, cls){ return '<div class="stat'+(cls?' '+cls:'')+'"><b>'+n+'</b><span>'+(color?'<i style="background:'+color+'"></i>':'')+label+'</span></div>'; };
     $("stats").innerHTML = st(S.total, "Total en el pool", "", "total") + st(S.disponibles, "Disponibles", "#6FCF8E") + st(S.proceso, "En proceso", "#F2B34B") + st(S.contratados, "Contratados", "#8FB0FF");
   }
@@ -416,19 +409,20 @@ body.admin .hm-only{display:none !important}
     }).sort(function(a,b){
       var sa = VISIBLE.indexOf(a.estado), sb = VISIBLE.indexOf(b.estado);
       sa = sa < 0 ? 9 : sa; sb = sb < 0 ? 9 : sb;
-      return sa - sb || (b.ingreso||"").localeCompare(a.ingreso||"");
+      return sa - sb || String(b.ingreso||"").localeCompare(String(a.ingreso||""));
     });
   }
 
   // ---------- Fichas
   function render(){
     renderStats();
+    if(!loaded){ $("count").textContent = ""; return; }
     var items = filtered();
     $("count").textContent = items.length === 1 ? "1 candidato" : items.length + " candidatos";
-    $("updated").textContent = PUB.savedAt ? "Actualizado el " + fmtDate(PUB.savedAt) : "";
+    $("updated").textContent = "";
     if(!items.length){
       var empty = list().length ? "Ningún candidato coincide con estos filtros." :
-        (isAdmin() ? "Aún no hay candidatos. Usa “+ Agregar candidato” o “Cargar Excel”." : "Pronto verás aquí los candidatos disponibles.");
+        (isAdmin() ? "Aún no hay candidatos. Usa “+ Agregar candidato”, “Cargar Excel” o escríbelos directo en la hoja." : "Pronto verás aquí los candidatos disponibles.");
       $("grid").innerHTML = '<div class="empty" style="grid-column:1/-1">'+empty+'</div>';
       return;
     }
@@ -451,8 +445,9 @@ body.admin .hm-only{display:none !important}
   }
 
   // ---------- Perfil
+  function safeUrl(u){ return /^https?:\/\//i.test(String(u||"")) ? u : ""; }
   function openDetail(c){
-    current = c;
+    if(!c) return; current = c;
     $("dAv").textContent = initials(c.nombre); $("dAv").setAttribute("style", avColors(c.nivel));
     $("dName").textContent = c.nombre;
     $("dSub").textContent = (c.id||"") + " · en el pool desde el " + fmtDate(c.ingreso);
@@ -467,6 +462,7 @@ body.admin .hm-only{display:none !important}
     $("dWhy").textContent = c.why || ""; $("dWhy").hidden = !c.why;
     $("dSummary").textContent = c.resumen || "Sin resumen todavía.";
     var doc = function(label, url, btn){
+      url = safeUrl(url);
       return url ? '<div class="doc"><span class="lbl">'+label+'</span><a href="'+esc(url)+'" target="_blank" rel="noopener">'+btn+'</a></div>'
                  : '<div class="doc empty-doc"><span class="lbl">'+label+'</span><span class="none">Sin link todavía</span></div>';
     };
@@ -475,9 +471,9 @@ body.admin .hm-only{display:none !important}
     if(!$("dlgDetail").open) $("dlgDetail").showModal();
   }
 
-  // ---------- Agendar (solo hiring managers)
+  // ---------- Agendar (solo supervisores): el correo llega solo a TA
   function openSched(c){
-    current = c;
+    if(!c) return; current = c;
     $("sSub").textContent = c.nombre + " · " + (c.nivel||"");
     $("sForm").hidden = false; $("sDone").hidden = true;
     $("sFootForm").style.display = "contents"; $("sFootDone").style.display = "none";
@@ -489,137 +485,74 @@ body.admin .hm-only{display:none !important}
   }
   function longDate(iso){ return new Date(iso+"T12:00:00").toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"}); }
   function hour12(t){ var p = t.split(":"), h = Number(p[0]); return (h%12||12) + ":" + p[1] + " " + (h<12 ? "a. m." : "p. m."); }
-  function outlookUrl(to, subj, body){
-    var e = encodeURIComponent;
-    return "https://outlook.office.com/mail/deeplink/compose?to=" + e(to.join(";")) + "&subject=" + e(subj) + "&body=" + e(body);
-  }
   $("fSched").addEventListener("submit", function(ev){
     ev.preventDefault();
     var c = current, hm = $("sHm").value.trim(), mail = $("sMail").value.trim();
     var need = [["sHm","Escribe tu nombre."],["sDate","Elige una fecha."],["sTime","Elige una hora."]];
     for(var i=0;i<need.length;i++){ if(!$(need[i][0]).value.trim()){ $("sErr").textContent = need[i][1]; $(need[i][0]).focus(); return; } }
     if(mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){ $("sErr").textContent = "Revisa tu correo."; $("sMail").focus(); return; }
-    var to = (C.emails||[]).filter(Boolean);
-    if(!to.length){ $("sErr").textContent = "TA aún no configura a dónde llegan las solicitudes. Avísale a tu reclutador."; return; }
     $("sErr").textContent = "";
     try { localStorage.setItem("pool-hm", JSON.stringify({sHm:hm, sMail:mail, sRole:$("sRole").value.trim()})); } catch(e){}
     var when = longDate($("sDate").value) + ", " + hour12($("sTime").value) + " (hora Colombia)";
-    var subj = "Solicitud de entrevista: " + c.nombre + " (" + c.id + ")";
-    var body = "Hola,\n\nQuiero agendar una entrevista con este candidato del " + (C.title || "Pool de Supervisores") + ":\n\n" +
-      "Candidato: " + c.nombre + " (" + c.id + ")\nNivel propuesto: " + (c.nivel||"—") + "\nFecha y hora: " + when + "\n" +
-      ($("sAlt").value.trim() ? "Opción alterna: " + $("sAlt").value.trim() + "\n" : "") +
-      "Modalidad: " + $("sMode").value + "\n" +
-      ($("sNotes").value.trim() ? "Comentarios: " + $("sNotes").value.trim() + "\n" : "") +
-      "\nGracias,\n" + hm + ($("sRole").value.trim() ? "\n" + $("sRole").value.trim() : "") + (mail ? "\n" + mail : "");
-    var done = function(title, text, backup){
-      $("sDoneTitle").textContent = title; $("sDoneText").textContent = text; $("sBackup").hidden = !backup;
+    $("sSend").disabled = true; $("sSend").textContent = "Enviando…";
+    api("request", {data:{id:c.id, solicitante:hm, correo:mail, cargo:$("sRole").value.trim(), fecha:$("sDate").value, hora:$("sTime").value,
+      cuando:when, alterna:$("sAlt").value.trim(), modalidad:$("sMode").value, comentarios:$("sNotes").value.trim()}})
+    .then(function(){
+      $("sDoneTitle").textContent = "Solicitud enviada";
+      $("sDoneText").textContent = "TA recibió tu solicitud para " + c.nombre + ": " + when + ". Te contactarán para confirmar la entrevista.";
       $("sForm").hidden = true; $("sDone").hidden = false;
       $("sFootForm").style.display = "none"; $("sFootDone").style.display = "contents";
-    };
-    var viaOutlook = function(){
-      var url = outlookUrl(to, subj, body);
-      $("sMailto").href = "mailto:" + to.map(encodeURIComponent).join(",") + "?subject=" + encodeURIComponent(subj) + "&body=" + encodeURIComponent(body);
-      $("sOutlook2").href = url;
-      window.open(url, "_blank", "noopener");
-      done("Se abrió Outlook", "Tu correo para TA ya está escrito. Revísalo y dale Enviar.", true);
-    };
-    viaOutlook();
+      $("sAlt").value = ""; $("sNotes").value = "";
+    }, function(e){
+      $("sSend").disabled = false; $("sSend").textContent = "Enviar solicitud";
+      $("sErr").textContent = errText(e);
+    });
   });
 
   // ---------- Acceso TA
-  $("btnAdmin").addEventListener("click", function(){
-    if(!cryptoOk()){ toast("Este navegador no permite el acceso TA. Abre la página en Edge o Chrome."); return; }
-    var first = !PUB.vault;
-    $("lTitle").textContent = first ? "Crear contraseña TA" : "Acceso TA";
-    $("lHelp").textContent = first ? "Es la primera vez. Crea la contraseña que protegerá el modo TA. Guárdala bien: sin ella no se puede editar el pool." : "Solo para el equipo de Talent Acquisition.";
-    $("lConfWrap").hidden = !first; $("lBtn").textContent = first ? "Crear y entrar" : "Entrar";
-    $("lPass").value = ""; $("lConf").value = ""; $("lErr").textContent = "";
-    $("dlgLogin").showModal(); $("lPass").focus();
-  });
+  var setupMode = false;
+  function showLogin(setup){
+    setupMode = !!setup;
+    $("lTitle").textContent = setup ? "Crear contraseña TA" : "Acceso TA";
+    $("lHelp").textContent = setup ? "Es la primera vez. Crea la contraseña del modo TA y compártela solo con tu equipo." : "Solo para el equipo de Talent Acquisition.";
+    $("lConfWrap").hidden = !setup; $("lBtn").textContent = setup ? "Crear y entrar" : "Entrar";
+    $("lConf").value = ""; $("lErr").textContent = "";
+    if(!$("dlgLogin").open){ $("lPass").value = ""; $("dlgLogin").showModal(); }
+    $("lPass").focus();
+  }
+  $("btnAdmin").addEventListener("click", function(){ showLogin(false); });
   $("fLogin").addEventListener("submit", function(ev){
     ev.preventDefault();
     var pass = $("lPass").value;
     if(!pass){ $("lErr").textContent = "Escribe la contraseña."; return; }
-    $("lBtn").disabled = true;
-    var finish = function(){ $("lBtn").disabled = false; };
-    if(!PUB.vault){
-      if(pass.length < 6){ $("lErr").textContent = "Usa al menos 6 caracteres."; return finish(); }
-      if(pass !== $("lConf").value){ $("lErr").textContent = "Las contraseñas no coinciden."; return finish(); }
-      var salt = crypto.getRandomValues(new Uint8Array(16));
-      deriveKey(pass, salt).then(function(key){
-        SESSION = {key:key, salt:salt};
-        enterAdmin({candidates: JSON.parse(JSON.stringify(PUB.candidates||[]))});
-        setDirty(true); finish();
-      });
-      return;
+    if(setupMode){
+      if(pass.length < 6){ $("lErr").textContent = "Usa al menos 6 caracteres."; return; }
+      if(pass !== $("lConf").value){ $("lErr").textContent = "Las contraseñas no coinciden."; return; }
     }
-    var salt2 = unb64(PUB.vault.s);
-    deriveKey(pass, salt2).then(function(key){
-      return open(key, PUB.vault).then(function(full){
-        SESSION = {key:key, salt:salt2};
-        return restoreDraft(full).then(function(res){ enterAdmin(res.data); if(res.restored){ setDirty(true); toast("Recuperé cambios que no habías guardado."); } });
-      });
-    }).then(finish, function(){ $("lErr").textContent = "Contraseña incorrecta."; finish(); });
+    $("lBtn").disabled = true; $("lErr").textContent = "";
+    api("login", {pass:pass, setup:setupMode}).then(function(j){
+      TOKEN = j.token; ssSet("pool-token", TOKEN);
+      $("dlgLogin").close(); enterAdmin(j);
+    }, function(e){
+      if(e && e.error === "needs_setup") showLogin(true);
+      else $("lErr").textContent = errText(e);
+    }).finally(function(){ $("lBtn").disabled = false; });
   });
-  function enterAdmin(full){
-    FULL = full; FULL.candidates = FULL.candidates || [];
-    $("dlgLogin").close(); document.body.classList.add("admin");
-    refreshFilters(); render(); window.scrollTo(0,0);
+  function enterAdmin(j){
+    ADM = j; C = j.config || C; loaded = true;
+    document.body.classList.add("admin"); applyHeader(); refreshFilters(); render(); window.scrollTo(0,0);
   }
-  function exitAdmin(){
-    if(dirty){ var b = $("btnExit"); if(b.dataset.c !== "1"){ b.dataset.c = "1"; b.textContent = "Tienes cambios sin guardar · clic otra vez para salir"; return; } }
-    $("btnExit").dataset.c = ""; $("btnExit").textContent = "Salir";
-    FULL = null; SESSION = null; dirty = false; $("dirty").hidden = true;
-    document.body.classList.remove("admin"); refreshFilters(); render();
+  function leaveAdmin(){
+    ADM = null; TOKEN = null; ssSet("pool-token", null);
+    document.body.classList.remove("admin");
+    document.querySelectorAll("dialog[open]").forEach(function(d){ d.close(); });
+    loadPublic();
   }
-  $("btnExit").addEventListener("click", exitAdmin);
-
-  // Borrador local cifrado, por si se cierra la página sin guardar
-  function setDirty(v){
-    dirty = v; $("dirty").hidden = !v;
-    if(v && SESSION){
-      FULL.draftAt = Date.now();
-      seal(FULL).then(function(v2){ try { localStorage.setItem(DRAFT_KEY, JSON.stringify({base:PUB.savedAt||"", vault:v2})); } catch(e){} });
-    }
-  }
-  function restoreDraft(full){
-    var raw = null; try { raw = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch(e){}
-    if(!raw || raw.base !== (PUB.savedAt||"")) return Promise.resolve({data:full, restored:false});
-    return open(SESSION.key, raw.vault).then(function(d){ return {data:d, restored:true}; }, function(){ return {data:full, restored:false}; });
-  }
-  window.addEventListener("beforeunload", function(e){ if(dirty){ e.preventDefault(); e.returnValue = ""; } });
-  function touch(){ setDirty(true); refreshFilters(); render(); }
-
-  // ---------- Guardar cambios: un solo archivo para todos
-  $("btnSave").addEventListener("click", function(){
-    if(!SESSION) return;
-    var saved = new Date().toISOString();
-    FULL.savedAt = saved; delete FULL.draftAt;
-    seal(FULL).then(function(vault){
-      var pub = {
-        savedAt: saved, config: C, stats: computeStats(FULL.candidates), vault: vault,
-        candidates: FULL.candidates.filter(function(c){ return VISIBLE.indexOf(c.estado) >= 0; }).map(function(c){
-          var x = JSON.parse(JSON.stringify(c)); delete x.presentaciones; return x;
-        })
-      };
-      var json = JSON.stringify(pub).replace(/</g, "\\u003c");
-      var html = PRISTINE
-        .replace(/(<script id="pool-data" type="application\/json">)[\s\S]*?(<\/script>)/, function(_, a, b){ return a + "\n" + json + "\n" + b; })
-        .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(C.title || "Pool de Supervisores") + "</title>");
-      var blob = new Blob([html], {type:"text/html;charset=utf-8"});
-      var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "index.html";
-      document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 800);
-      PUB.savedAt = saved; PUB.vault = vault; PUB.stats = pub.stats; PUB.candidates = pub.candidates;
-      dirty = false; $("dirty").hidden = true;
-      try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
-      render();
-      toast("Listo. Sube el index.html que se descargó a GitHub, reemplazando el anterior.");
-    });
-  });
+  $("btnExit").addEventListener("click", function(){ if(TOKEN) api("logout").catch(function(){}); leaveAdmin(); });
 
   // ---------- Presentaciones y feedback (solo TA)
   function renderPres(c){
-    var items = (c.presentaciones||[]).slice().sort(function(a,b){ return (b.fecha||"").localeCompare(a.fecha||""); });
+    var items = (c.presentaciones||[]).slice().sort(function(a,b){ return String(b.fecha||"").localeCompare(String(a.fecha||"")); });
     $("dPres").innerHTML = items.length ? items.map(function(p){
       return '<div class="pres-item"><div class="ph"><b>'+esc(p.posicion)+'</b><span class="pill r-'+esc(String(p.resultado).replace(/\s/g,""))+'">'+esc(p.resultado)+'</span></div>' +
         '<div class="muted" style="font-size:13px">'+fmtDate(p.fecha)+(p.cuenta?' · '+esc(p.cuenta):'')+'</div>' +
@@ -631,35 +564,36 @@ body.admin .hm-only{display:none !important}
     var c = current; if(!c || !isAdmin()) return;
     var pos = $("pPos").value.trim();
     if(!pos){ $("pErr").textContent = "Escribe la posición o vacante."; $("pPos").focus(); return; }
-    $("pErr").textContent = "";
-    var res = $("pRes").value;
-    c.presentaciones = c.presentaciones || [];
-    c.presentaciones.push({pid:Date.now().toString(36), fecha:$("pFecha").value, posicion:pos, cuenta:$("pCuenta").value.trim(), resultado:res, feedback:$("pFb").value.trim()});
-    if(res === "Contratado") c.estado = "Contratado";
-    else if((res === "Avanza" || res === "Pendiente feedback") && c.estado === "Disponible") c.estado = "En proceso";
-    $("pPos").value = ""; $("pCuenta").value = ""; $("pFb").value = ""; $("pRes").value = "Pendiente feedback";
-    touch(); openDetail(c);
+    $("pErr").textContent = ""; $("pAdd").disabled = true;
+    adminCall("addPres", {pres:{cid:c.id, posicion:pos, cuenta:$("pCuenta").value.trim(), fecha:$("pFecha").value, resultado:$("pRes").value, feedback:$("pFb").value.trim()}})
+      .then(function(){
+        $("pPos").value = ""; $("pCuenta").value = ""; $("pFb").value = ""; $("pRes").value = "Pendiente feedback";
+        openDetail(byId(c.id));
+      }, function(e){ $("pErr").textContent = errText(e); })
+      .finally(function(){ $("pAdd").disabled = false; });
   });
   $("dPres").addEventListener("click", function(e){
     var b = e.target.closest("[data-delpres]"); if(!b || !current) return;
     if(b.dataset.confirm !== "1"){ b.dataset.confirm = "1"; b.textContent = "¿Seguro? Clic otra vez"; return; }
-    current.presentaciones = (current.presentaciones||[]).filter(function(p){ return p.pid !== b.dataset.delpres; });
-    touch(); renderPres(current);
+    var cid = current.id;
+    adminCall("deletePres", {pid:b.dataset.delpres}).then(function(){ openDetail(byId(cid)); }, function(e2){ toast(errText(e2), true); });
   });
 
   // ---------- Agregar / editar candidatos
-  function nextId(){
-    var max = 0; list().forEach(function(c){ var m = /(\d+)$/.exec(c.id||""); if(m) max = Math.max(max, Number(m[1])); });
-    return "SUP-" + String(max+1).padStart(3,"0");
-  }
   function openEdit(c){
-    fillSelect($("eEstado"), C.estados); fillSelect($("eModalidad"), C.modalidades);
-    fillSelect($("eIngles"), C.ingles); fillSelect($("eNivel"), C.levels);
+    fillSelect($("eEstado"), OPT.estados); fillSelect($("eModalidad"), OPT.modalidades);
+    fillSelect($("eIngles"), OPT.ingles); fillSelect($("eNivel"), OPT.levels);
     editing = c || null;
-    var x = c || {id:nextId(), estado:"Disponible", ingreso:today(), pais:"Colombia", modalidad:"Híbrido", ingles:"B2", nivel:"Jr"};
+    var x = c || {id:"", estado:"Disponible", ingreso:today(), pais:"Colombia", modalidad:"Híbrido", ingles:"B2", nivel:"Jr"};
     $("eTitle").textContent = c ? "Editar candidato" : "Agregar candidato";
     var map = {eNombre:"nombre", eId:"id", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eWhy:"why", eVideo:"video", eCv:"cv"};
-    Object.keys(map).forEach(function(k){ $(k).value = x[map[k]] || ""; });
+    Object.keys(map).forEach(function(k){
+      var v = x[map[k]] == null ? "" : String(x[map[k]]);
+      var el = $(k);
+      if(el.tagName === "SELECT" && v && !Array.prototype.some.call(el.options, function(o){ return o.value === v; })) el.insertAdjacentHTML("beforeend", "<option>"+esc(v)+"</option>");
+      el.value = v;
+    });
+    $("eId").placeholder = c ? "" : "Se asigna solo";
     $("eErr").textContent = ""; $("eDelete").hidden = !c; $("eDelete").textContent = "Eliminar"; $("eDelete").dataset.confirm = "";
     if($("dlgDetail").open) $("dlgDetail").close();
     $("dlgEdit").showModal();
@@ -670,22 +604,18 @@ body.admin .hm-only{display:none !important}
     e.preventDefault();
     var nombre = $("eNombre").value.trim();
     if(!nombre){ $("eErr").textContent = "El nombre es obligatorio."; $("eNombre").focus(); return; }
-    var id = $("eId").value.trim() || nextId();
-    if(list().some(function(c){ return c.id === id && c !== editing; })){ $("eErr").textContent = "Ya existe un candidato con el ID " + id + "."; $("eId").focus(); return; }
-    var r = editing || {};
-    r.id = id; r.nombre = nombre; r.estado = $("eEstado").value; r.ingreso = $("eIngreso").value;
-    r.pais = $("ePais").value.trim(); r.ciudad = $("eCiudad").value.trim(); r.modalidad = $("eModalidad").value;
-    r.disponibilidad = $("eDisp").value.trim(); r.ingles = $("eIngles").value; r.expectativa = Number($("eExp").value) || 0;
-    r.nivel = $("eNivel").value; r.resumen = $("eResumen").value.trim(); r.why = $("eWhy").value.trim();
-    r.video = $("eVideo").value.trim(); r.cv = $("eCv").value.trim();
-    if(!editing) FULL.candidates.push(r);
-    $("dlgEdit").close(); touch();
+    var btn = e.submitter || $("fEdit").querySelector("[type=submit]"); btn.disabled = true;
+    var cand = {originalId: editing ? editing.id : "", id:$("eId").value.trim(), nombre:nombre, estado:$("eEstado").value, ingreso:$("eIngreso").value,
+      pais:$("ePais").value.trim(), ciudad:$("eCiudad").value.trim(), modalidad:$("eModalidad").value, disponibilidad:$("eDisp").value.trim(),
+      ingles:$("eIngles").value, expectativa:$("eExp").value, nivel:$("eNivel").value, resumen:$("eResumen").value.trim(), why:$("eWhy").value.trim(),
+      video:$("eVideo").value.trim(), cv:$("eCv").value.trim()};
+    adminCall("saveCandidate", {candidate:cand}).then(function(){ $("dlgEdit").close(); toast("Guardado."); }, function(e2){ $("eErr").textContent = errText(e2); })
+      .finally(function(){ btn.disabled = false; });
   });
   $("eDelete").addEventListener("click", function(){
     var b = $("eDelete");
     if(!b.dataset.confirm){ b.dataset.confirm = "1"; b.textContent = "¿Seguro? Clic otra vez"; return; }
-    FULL.candidates = FULL.candidates.filter(function(c){ return c !== editing; });
-    $("dlgEdit").close(); touch();
+    adminCall("deleteCandidate", {id:editing.id}).then(function(){ $("dlgEdit").close(); toast("Candidato eliminado."); }, function(e2){ $("eErr").textContent = errText(e2); });
   });
 
   // ---------- Configuración
@@ -702,14 +632,14 @@ body.admin .hm-only{display:none !important}
       if(p1.length < 6){ $("cErr").textContent = "La nueva contraseña debe tener al menos 6 caracteres."; return; }
       if(p1 !== p2){ $("cErr").textContent = "Las contraseñas no coinciden."; return; }
     }
-    C.eyebrow = $("cEyebrow").value.trim(); C.title = $("cTitleIn").value.trim() || "Pool de Supervisores"; C.subtitle = $("cSub").value.trim();
-    C.emails = $("cMails").value.split(/[,;\s]+/).map(function(s){ return s.trim(); }).filter(Boolean);
-    delete C.webhook;
-    var apply = function(){ applyHeader(); $("dlgSettings").close(); touch(); };
-    if(p1){
-      var salt = crypto.getRandomValues(new Uint8Array(16));
-      deriveKey(p1, salt).then(function(key){ SESSION = {key:key, salt:salt}; apply(); toast("Contraseña cambiada. Guarda los cambios para que aplique."); });
-    } else apply();
+    var emails = $("cMails").value.split(/[,;\s]+/).map(function(s){ return s.trim(); }).filter(Boolean);
+    var bad = emails.filter(function(m){ return !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m); });
+    if(bad.length){ $("cErr").textContent = "Revisa este correo: " + bad[0]; return; }
+    var btn = $("fSettings").querySelector("[type=submit]"); btn.disabled = true;
+    adminCall("saveConfig", {config:{eyebrow:$("cEyebrow").value.trim(), title:$("cTitleIn").value.trim() || "Pool de Supervisores", subtitle:$("cSub").value.trim(), emails:emails}})
+      .then(function(){ return p1 ? adminCall("changePass", {pass:p1}) : null; })
+      .then(function(){ $("dlgSettings").close(); toast(p1 ? "Configuración y contraseña guardadas." : "Configuración guardada."); }, function(e2){ $("cErr").textContent = errText(e2); })
+      .finally(function(){ btn.disabled = false; });
   });
 
   // ---------- Cargar Excel (.xlsx) o CSV
@@ -717,7 +647,7 @@ body.admin .hm-only{display:none !important}
   $("xlsFile").addEventListener("change", function(){
     var file = this.files[0]; if(!file) return; this.value = "";
     var isCsv = /\.csv$/i.test(file.name);
-    if(!isCsv && typeof XLSX === "undefined"){ toast("No se pudo cargar el lector de Excel (requiere internet). Guarda la hoja como CSV e intenta de nuevo."); return; }
+    if(!isCsv && typeof XLSX === "undefined"){ toast("No se pudo cargar el lector de Excel. Guarda la hoja como CSV e intenta de nuevo.", true); return; }
     var rd = new FileReader();
     rd.onload = function(){
       var rows;
@@ -728,7 +658,7 @@ body.admin .hm-only{display:none !important}
           var name = wb.SheetNames.filter(function(n){ return /candidatos|pool|bench/i.test(n); })[0] || wb.SheetNames[0];
           rows = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, defval:"", raw:true});
         }
-      } catch(err){ toast("No pude leer el archivo. Revisa que sea la plantilla de carga."); return; }
+      } catch(err){ toast("No pude leer el archivo. Revisa que sea la plantilla de carga.", true); return; }
       importRows(rows);
     };
     if(isCsv) rd.readAsText(file, "utf-8"); else rd.readAsArrayBuffer(file);
@@ -743,23 +673,24 @@ body.admin .hm-only{display:none !important}
   }
   function importRows(rows){
     var hi = rows.findIndex(function(r){ return r.some(function(x){ return norm(x) === "nombre"; }); });
-    if(hi < 0){ toast("No encontré la columna “Nombre”. Usa la plantilla de carga."); return; }
+    if(hi < 0){ toast("No encontré la columna “Nombre”. Usa la plantilla de carga.", true); return; }
     var h = rows[hi].map(norm);
     var alias = {id:["id"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], video:["link video","video"]};
     var idx = {};
     Object.keys(alias).forEach(function(k){ idx[k] = -1; alias[k].some(function(a){ var i = h.indexOf(norm(a)); if(i >= 0){ idx[k] = i; return true; } return false; }); });
-    var added = 0, updated = 0;
+    var out = [];
     rows.slice(hi+1).forEach(function(r){
       var get = function(k){ return idx[k] >= 0 ? cellStr(r[idx[k]]) : ""; };
       var nombre = get("nombre"); if(!nombre || /^ejemplo/i.test(nombre)) return;
-      var num = function(v){ return Number(String(v).replace(/[^\d]/g,"")) || 0; };
-      var url = function(v){ return /^https?:/i.test(v) ? v : ""; };
-      var rec = {id:get("id")||nextId(), nombre:nombre, estado:get("estado")||"Disponible", ingreso:toIso(get("ingreso"))||today(), pais:get("pais"), ciudad:get("ciudad"), modalidad:get("modalidad"), disponibilidad:get("disponibilidad"), ingles:get("ingles").toUpperCase(), expectativa:num(get("expectativa")), nivel:get("nivel"), resumen:get("resumen"), why:get("why"), cv:url(get("cv")), video:url(get("video"))};
-      var ex = byId(rec.id);
-      if(ex){ ["why","cv","video"].forEach(function(k){ if(!rec[k]) rec[k] = ex[k] || ""; }); Object.assign(ex, rec); updated++; }
-      else { FULL.candidates.push(rec); added++; }
+      var rec = {}; Object.keys(alias).forEach(function(k){ rec[k] = get(k); });
+      rec.ingreso = toIso(rec.ingreso); out.push(rec);
     });
-    touch(); toast(added + " candidatos nuevos y " + updated + " actualizados. Recuerda “Guardar cambios”.");
+    if(!out.length){ toast("El archivo no trae candidatos para cargar.", true); return; }
+    var before = list().length;
+    adminCall("import", {rows:out}).then(function(j){
+      var nuevos = j.candidates.length - before;
+      toast(out.length + " filas cargadas (" + nuevos + " candidatos nuevos).");
+    }, function(e){ toast(errText(e), true); });
   }
   function parseCSV(t){
     var line = t.split("\n")[0], sep = line.split(";").length > line.split(",").length ? ";" : ",";
@@ -776,6 +707,22 @@ body.admin .hm-only{display:none !important}
     return rows;
   }
 
+  // ---------- Carga inicial
+  function loadPublic(){
+    if(!ENDPOINT){
+      loaded = false; render();
+      $("grid").innerHTML = '<div class="empty" style="grid-column:1/-1">La página aún no está conectada a la hoja. Pega la URL del Apps Script en <b>config.js</b>.</div>';
+      return Promise.resolve();
+    }
+    $("grid").innerHTML = '<div class="empty" style="grid-column:1/-1">Cargando candidatos…</div>';
+    return fetch(ENDPOINT + "?action=public").then(function(r){ return r.json(); }).then(function(j){
+      if(!j.ok) throw j;
+      PUB = j; C = j.config || C; loaded = true; applyHeader(); refreshFilters(); render();
+    }).catch(function(e){
+      $("grid").innerHTML = '<div class="empty" style="grid-column:1/-1">No se pudieron cargar los candidatos. Recarga la página en un momento.</div>';
+    });
+  }
+
   // ---------- Eventos generales
   ["q","fCiudad"].forEach(function(id){ $(id).addEventListener("input", render); });
   $("fPais").addEventListener("input", function(){ $("fCiudad").value = ""; refreshFilters(); render(); });
@@ -789,6 +736,12 @@ body.admin .hm-only{display:none !important}
   document.querySelectorAll("[data-close]").forEach(function(b){ b.addEventListener("click", function(){ b.closest("dialog").close(); }); });
   document.querySelectorAll("dialog").forEach(function(d){ d.addEventListener("click", function(e){ if(e.target === d) d.close(); }); });
 
-  applyHeader(); refreshFilters(); render();
+  applyHeader(); render();
+  TOKEN = ssGet("pool-token");
+  if(TOKEN && ENDPOINT){
+    api("admin").then(enterAdmin, function(){ TOKEN = null; ssSet("pool-token", null); loadPublic(); });
+  } else loadPublic();
 })();
-</script></body></html>
+</script>
+</body>
+</html>
