@@ -51,6 +51,10 @@ main .wrap{padding-block:22px 40px}
 .pills{display:flex;flex-wrap:wrap;gap:6px}
 .rec-tag{font-size:12.5px;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:4px 8px;align-self:flex-start}
 .rec-tag.none{color:var(--muted);background:var(--bg)}
+.ids{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ids b{color:var(--ink);font-weight:600}
+.ids .miss{color:var(--warn)}
+
 .pill{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
 .lv-Jr{background:var(--jr-soft);color:var(--jr)} .lv-Specialist{background:var(--sp-soft);color:var(--sp)} .lv-Senior{background:var(--sr-soft);color:var(--sr)}
 .st-Disponible{background:var(--ok-soft);color:var(--ok)} .st-Enproceso{background:var(--warn-soft);color:var(--warn)}
@@ -135,6 +139,7 @@ body.admin .hm-only{display:none !important}
     <b>Modo TA <span id="saving" hidden>Guardando…</span></b>
     <button class="btn small" id="btnAdd" type="button">+ Agregar candidato</button>
     <button class="btn small" id="btnImport" type="button">Cargar Excel</button>
+    <button class="btn small" id="btnExport" type="button">Descargar Excel</button>
     <button class="btn small" id="btnSettings" type="button">Configuración</button>
     <button class="btn small" id="btnExit" type="button">Salir</button>
     <input type="file" id="xlsFile" accept=".xlsx,.xls,.csv" hidden>
@@ -154,7 +159,7 @@ body.admin .hm-only{display:none !important}
 
 <div class="toolbar">
   <div class="wrap">
-    <input id="q" type="search" placeholder="Buscar por nombre o experiencia" aria-label="Buscar">
+    <input id="q" type="search" placeholder="Buscar por nombre, ciudad o experiencia" aria-label="Buscar">
     <select id="fEstado" aria-label="Estado"></select>
     <select id="fPais" aria-label="País"><option value="">Todos los países</option></select>
     <select id="fCiudad" aria-label="Ciudad"><option value="">Todas las ciudades</option></select>
@@ -280,7 +285,8 @@ body.admin .hm-only{display:none !important}
   <div class="dlg-head"><h2 id="eTitle">Candidato</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
   <form id="fEdit" novalidate>
     <div class="dlg-body">
-      <div class="row"><label>Nombre<input id="eNombre"></label><label>ID<input id="eId" placeholder="SUP-001"></label></div>
+      <div class="row"><label>Nombre<input id="eNombre"></label><label>CEIPAL Applicant ID<input id="eCeipal" placeholder="Ej. 123456"></label></div>
+      <div class="row"><label>Número de documento<input id="eCedula" placeholder="Sin puntos ni espacios"></label><span></span></div>
       <div class="row"><label>Estado<select id="eEstado"></select></label><label>Fecha de ingreso al pool<input id="eIngreso" type="date"></label></div>
       <div class="row"><label>País<input id="ePais" placeholder="Colombia"></label><label>Ciudad<input id="eCiudad" placeholder="Barranquilla"></label></div>
       <div class="row"><label>Modalidad<select id="eModalidad"></select></label><label>Disponibilidad<input id="eDisp" placeholder="2 semanas"></label></div>
@@ -422,7 +428,7 @@ body.admin .hm-only{display:none !important}
       if(isAdmin() && rc && c.reclutador !== rc) return false;
       if(pa && c.pais !== pa) return false;
       if(ci && c.ciudad !== ci) return false;
-      if(q && [c.nombre,c.ciudad,c.pais,c.resumen,c.id].join(" ").toLowerCase().indexOf(q) < 0) return false;
+      if(q && [c.nombre,c.ciudad,c.pais,c.resumen,c.ceipal,c.cedula].join(" ").toLowerCase().indexOf(q) < 0) return false;
       return true;
     }).sort(function(a,b){
       var sa = ORDER.indexOf(a.estado), sb = ORDER.indexOf(b.estado);
@@ -454,7 +460,8 @@ body.admin .hm-only{display:none !important}
         (isAdmin() && dd !== null && dd > 45 && VISIBLE.indexOf(c.estado) >= 0 ? '<span class="pill st-Revalidar">'+dd+' días: revalidar</span>' : '') +
         (isAdmin() && np ? '<span class="pill" style="background:var(--bg);color:var(--muted)">Presentado '+np+'×</span>' : '') +
         (isAdmin() && c.estado === "Contratado" && (c.nivelContratado || c.fechaContratacion) ? '<span class="pill st-Contratado">Seniority final: '+esc(c.nivelContratado||c.nivel||"—")+(c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? ' (propuesto: '+esc(c.nivel)+')' : '')+(c.fechaContratacion?' · '+fmtDate(c.fechaContratacion):'')+'</span>' : '') + '</div>' +
-        (isAdmin() ? '<div class="rec-tag'+(c.reclutador?'':' none')+'">'+(c.reclutador ? 'Reclutador: <b>'+esc(c.reclutador)+'</b>' : 'Sin reclutador asignado')+'</div>' : '') +
+        (isAdmin() ? '<div class="rec-tag'+(c.reclutador?'':' none')+'">'+(c.reclutador ? 'Reclutador: <b>'+esc(c.reclutador)+'</b>' : 'Sin reclutador asignado')+'</div>' +
+          '<div class="ids">'+(c.ceipal ? 'CEIPAL <b>'+esc(c.ceipal)+'</b>' : '<span class="miss">Sin CEIPAL ID</span>')+' · '+(c.cedula ? 'Doc. <b>'+esc(c.cedula)+'</b>' : '<span class="miss">Sin documento</span>')+'</div>' : '') +
         '<dl class="facts"><div><dt>Inglés</dt><dd>'+esc(c.ingles||"—")+'</dd></div><div><dt>Disponibilidad</dt><dd>'+esc(c.disponibilidad||"—")+'</dd></div>' +
         '<div><dt>Expectativa total</dt><dd>'+money(c.expectativa)+'</dd></div><div><dt>Modalidad</dt><dd>'+esc(c.modalidad||"—")+'</dd></div></dl>' +
         '<p class="summary">'+esc(c.resumen||"")+'</p>' +
@@ -471,7 +478,7 @@ body.admin .hm-only{display:none !important}
     if(!c) return; current = c;
     $("dAv").textContent = initials(c.nombre); $("dAv").setAttribute("style", avColors(c.nivel));
     $("dName").textContent = c.nombre;
-    $("dSub").textContent = (c.id||"") + " · en el pool desde el " + fmtDate(c.ingreso);
+    $("dSub").textContent = (isAdmin() ? ["CEIPAL " + (c.ceipal || "—"), "Doc. " + (c.cedula || "—")].join(" · ") + " · e" : "E") + "n el pool desde el " + fmtDate(c.ingreso);
     $("dPills").innerHTML = '<span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>';
     $("dFacts").innerHTML = [
       ["Ubicación", (loc(c)||"—") + (c.modalidad ? " · " + c.modalidad : "")],
@@ -618,14 +625,13 @@ body.admin .hm-only{display:none !important}
     var lastRec = ""; try { lastRec = localStorage.getItem("pool-rec") || ""; } catch(e){}
     var x = c || {id:"", estado:"Disponible", ingreso:today(), pais:"Colombia", modalidad:"Híbrido", ingles:"B2", nivel:"Jr", reclutador:lastRec};
     $("eTitle").textContent = c ? "Editar candidato" : "Agregar candidato";
-    var map = {eNombre:"nombre", eId:"id", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eWhy:"why", eVideo:"video", eCv:"cv", eRec:"reclutador", eFContr:"fechaContratacion", eNivContr:"nivelContratado"};
+    var map = {eNombre:"nombre", eCeipal:"ceipal", eCedula:"cedula", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eWhy:"why", eVideo:"video", eCv:"cv", eRec:"reclutador", eFContr:"fechaContratacion", eNivContr:"nivelContratado"};
     Object.keys(map).forEach(function(k){
       var v = x[map[k]] == null ? "" : String(x[map[k]]);
       var el = $(k);
       if(el.tagName === "SELECT" && v && !Array.prototype.some.call(el.options, function(o){ return o.value === v; })) el.insertAdjacentHTML("beforeend", "<option>"+esc(v)+"</option>");
       el.value = v;
     });
-    $("eId").placeholder = c ? "" : "Se asigna solo";
     toggleHire();
     $("eErr").textContent = ""; $("eDelete").hidden = !c; $("eDelete").textContent = "Eliminar"; $("eDelete").dataset.confirm = "";
     if($("dlgDetail").open) $("dlgDetail").close();
@@ -645,7 +651,7 @@ body.admin .hm-only{display:none !important}
     var nombre = $("eNombre").value.trim();
     if(!nombre){ $("eErr").textContent = "El nombre es obligatorio."; $("eNombre").focus(); return; }
     var btn = e.submitter || $("fEdit").querySelector("[type=submit]"); btn.disabled = true;
-    var cand = {originalId: editing ? editing.id : "", id:$("eId").value.trim(), nombre:nombre, estado:$("eEstado").value, ingreso:$("eIngreso").value,
+    var cand = {originalId: editing ? editing.id : "", ceipal:$("eCeipal").value.trim(), cedula:$("eCedula").value.replace(/[\s.,\-]/g,""), nombre:nombre, estado:$("eEstado").value, ingreso:$("eIngreso").value,
       pais:$("ePais").value.trim(), ciudad:$("eCiudad").value.trim(), modalidad:$("eModalidad").value, disponibilidad:$("eDisp").value.trim(),
       ingles:$("eIngles").value, expectativa:$("eExp").value, nivel:$("eNivel").value, resumen:$("eResumen").value.trim(), why:$("eWhy").value.trim(),
       video:$("eVideo").value.trim(), cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(),
@@ -714,26 +720,48 @@ body.admin .hm-only{display:none !important}
     return "";
   }
   function importRows(rows){
-    var hi = rows.findIndex(function(r){ return r.some(function(x){ return norm(x) === "nombre"; }); });
-    if(hi < 0){ toast("No encontré la columna “Nombre”. Usa la plantilla de carga.", true); return; }
+    var keyCols = ["nombre","cedula","numero de documento","documento","ceipal applicant id","ceipal id"];
+    var hi = rows.findIndex(function(r){ return r.some(function(x){ return keyCols.indexOf(norm(x)) >= 0; }); });
+    if(hi < 0){ toast("No encontré las columnas Nombre, Número de documento o CEIPAL Applicant ID. Usa la plantilla de carga.", true); return; }
     var h = rows[hi].map(norm);
-    var alias = {id:["id"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], video:["link video","video"], reclutador:["reclutador","recruiter"], fechaContratacion:["fecha de contratacion"], nivelContratado:["seniority final","seniority contratado","nivel contratado"]};
+    var alias = {id:["id interno","id"], ceipal:["ceipal applicant id","ceipal id","applicant id","ceipal"], cedula:["numero de documento","documento","cedula","cc"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], video:["link video","video"], reclutador:["reclutador","recruiter"], fechaContratacion:["fecha de contratacion"], nivelContratado:["seniority final","seniority contratado","nivel contratado"]};
     var idx = {};
     Object.keys(alias).forEach(function(k){ idx[k] = -1; alias[k].some(function(a){ var i = h.indexOf(norm(a)); if(i >= 0){ idx[k] = i; return true; } return false; }); });
     var out = [];
     rows.slice(hi+1).forEach(function(r){
       var get = function(k){ return idx[k] >= 0 ? cellStr(r[idx[k]]) : ""; };
-      var nombre = get("nombre"); if(!nombre || /^ejemplo/i.test(nombre)) return;
-      var rec = {}; Object.keys(alias).forEach(function(k){ rec[k] = get(k); });
-      rec.ingreso = toIso(rec.ingreso); rec.fechaContratacion = toIso(rec.fechaContratacion); out.push(rec);
+      var nombre = get("nombre");
+      if(/^ejemplo/i.test(nombre) || (!nombre && !get("ceipal") && !get("cedula"))) return;
+      var rec = {}; Object.keys(alias).forEach(function(k){ if(idx[k] >= 0) rec[k] = get(k); });
+      if(rec.ingreso) rec.ingreso = toIso(rec.ingreso);
+      if(rec.fechaContratacion) rec.fechaContratacion = toIso(rec.fechaContratacion);
+      out.push(rec);
     });
     if(!out.length){ toast("El archivo no trae candidatos para cargar.", true); return; }
-    var before = list().length;
     adminCall("import", {rows:out}).then(function(j){
-      var nuevos = j.candidates.length - before;
-      toast(out.length + " filas cargadas (" + nuevos + " candidatos nuevos).");
+      var r = j.importacion || {nuevos:0, actualizados:0};
+      toast(r.nuevos + " candidatos nuevos y " + r.actualizados + " actualizados.");
     }, function(e){ toast(errText(e), true); });
   }
+  // Descarga en Excel lo que se ve con los filtros actuales (para cruzar con CEIPAL en bulk)
+  $("btnExport").addEventListener("click", function(){
+    if(typeof XLSX === "undefined"){ toast("No se pudo cargar el generador de Excel. Recarga la página.", true); return; }
+    var items = filtered();
+    if(!items.length){ toast("No hay candidatos con estos filtros.", true); return; }
+    var rows = items.map(function(c){ return {
+      "CEIPAL Applicant ID": c.ceipal || "", "Número de documento": c.cedula || "", "Nombre": c.nombre || "",
+      "Estado": c.estado || "", "Reclutador": c.reclutador || "", "Nivel propuesto": c.nivel || "", "Seniority final": c.nivelContratado || "",
+      "Fecha de ingreso": c.ingreso || "", "Fecha de contratación": c.fechaContratacion || "", "País": c.pais || "", "Ciudad": c.ciudad || "",
+      "Modalidad": c.modalidad || "", "Disponibilidad": c.disponibilidad || "", "Inglés": c.ingles || "", "Expectativa total (COP)": Number(c.expectativa) || "",
+      "Resumen de experiencia": c.resumen || "", "Por qué este nivel": c.why || "", "Link CV": c.cv || "", "Link video": c.video || "", "ID interno": c.id || ""
+    }; });
+    var ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = Object.keys(rows[0]).map(function(k){ return {wch: /Resumen|Por qué|Link/.test(k) ? 40 : Math.max(12, k.length + 2)}; });
+    var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Candidatos");
+    XLSX.writeFile(wb, "pool_supervisores_" + today() + ".xlsx");
+    toast(items.length + " candidatos descargados.");
+  });
+
   function parseCSV(t){
     var line = t.split("\n")[0], sep = line.split(";").length > line.split(",").length ? ";" : ",";
     var rows = [], row = [], f = "", q = false;
