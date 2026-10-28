@@ -18,6 +18,7 @@
   --r:10px;
 }
 *{box-sizing:border-box}
+[hidden]{display:none !important}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
 button,input,select,textarea{font:inherit;color:inherit}
 .wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -87,7 +88,7 @@ h2{font:800 20px/1.2 var(--display);margin:0}
 h3{font:700 14px/1.2 var(--display);margin:18px 0 8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .profile-box{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .lvl-line{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:600;color:var(--muted)}
-.docs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.docs{display:grid;grid-template-columns:1fr;gap:10px;max-width:340px}
 .doc{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .doc .lbl{font:700 13px var(--display);color:var(--muted)}
 .doc a{align-self:flex-start;text-decoration:none;color:#fff;background:var(--accent);border-radius:8px;padding:7px 12px;font-weight:600;font-size:14px}
@@ -99,6 +100,9 @@ h3{font:700 14px/1.2 var(--display);margin:18px 0 8px;text-transform:uppercase;l
 .pres-item .ph{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .pres-item p{margin:6px 0 0;color:var(--muted)}
 .pres-form{background:var(--bg);border-radius:8px;padding:12px}
+.pres-acts{display:flex;gap:14px;align-items:center;margin-top:8px}
+.pres-item.editing{border-color:var(--accent);background:var(--accent-soft)}
+.pres-item.editing label{margin-bottom:8px}
 .pres-form label{margin-bottom:8px}
 .muted{color:var(--muted)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -213,7 +217,7 @@ body.admin .hm-only{display:none !important}
       <p id="dWhy" class="muted" style="font-size:14px;margin:0"></p>
       <p id="dSummary" style="margin:0;font-size:15px"></p>
     </div>
-    <h3>Video y CV</h3>
+    <h3>CV</h3>
     <div class="docs" id="dLinks"></div>
     <div class="admin-only">
       <h3>Presentaciones y feedback <span style="font-weight:500;text-transform:none;letter-spacing:0">(solo TA)</span></h3>
@@ -296,7 +300,7 @@ body.admin .hm-only{display:none !important}
       <div class="row" id="eHireRow" hidden><label>Fecha de contratación<input id="eFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="eNivContr"></select></label></div>
       <label>Resumen de experiencia (3–4 líneas)<textarea id="eResumen" rows="4"></textarea></label>
       <label>Por qué este nivel (una línea)<input id="eWhy"></label>
-      <div class="row"><label>Link del video<input id="eVideo" type="url" placeholder="https://..."></label><label>Link del CV<input id="eCv" type="url" placeholder="https://..."></label></div>
+      <div class="row"><label>Link del CV<input id="eCv" type="url" placeholder="https://..."></label></div>
       <div class="err" id="eErr" role="alert"></div>
     </div>
     <div class="dlg-foot">
@@ -459,7 +463,7 @@ body.admin .hm-only{display:none !important}
         '<div class="pills"><span class="'+lvClass(c.nivel)+'">'+esc(c.nivel||"Sin nivel")+'</span><span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' +
         (isAdmin() && dd !== null && dd > 45 && VISIBLE.indexOf(c.estado) >= 0 ? '<span class="pill st-Revalidar">'+dd+' días: revalidar</span>' : '') +
         (isAdmin() && np ? '<span class="pill" style="background:var(--bg);color:var(--muted)">Presentado '+np+'×</span>' : '') +
-        (isAdmin() && c.estado === "Contratado" && (c.nivelContratado || c.fechaContratacion) ? '<span class="pill st-Contratado">Seniority final: '+esc(c.nivelContratado||c.nivel||"—")+(c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? ' (propuesto: '+esc(c.nivel)+')' : '')+(c.fechaContratacion?' · '+fmtDate(c.fechaContratacion):'')+'</span>' : '') + '</div>' +
+        (isAdmin() && c.estado === "Contratado" && (c.nivelContratado || c.fechaContratacion) ? '<span class="pill st-Contratado" style="white-space:normal">Seniority final: '+esc(c.nivelContratado||c.nivel||"—")+(c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? ' (propuesto: '+esc(c.nivel)+')' : '')+(c.fechaContratacion?' · '+fmtDate(c.fechaContratacion):'')+'</span>' : '') + '</div>' +
         (isAdmin() ? '<div class="rec-tag'+(c.reclutador?'':' none')+'">'+(c.reclutador ? 'Reclutador: <b>'+esc(c.reclutador)+'</b>' : 'Sin reclutador asignado')+'</div>' +
           '<div class="ids">'+(c.ceipal ? 'CEIPAL <b>'+esc(c.ceipal)+'</b>' : '<span class="miss">Sin CEIPAL ID</span>')+' · '+(c.cedula ? 'Doc. <b>'+esc(c.cedula)+'</b>' : '<span class="miss">Sin documento</span>')+'</div>' : '') +
         '<dl class="facts"><div><dt>Inglés</dt><dd>'+esc(c.ingles||"—")+'</dd></div><div><dt>Disponibilidad</dt><dd>'+esc(c.disponibilidad||"—")+'</dd></div>' +
@@ -496,7 +500,7 @@ body.admin .hm-only{display:none !important}
       return url ? '<div class="doc"><span class="lbl">'+label+'</span><a href="'+esc(url)+'" target="_blank" rel="noopener">'+btn+'</a></div>'
                  : '<div class="doc empty-doc"><span class="lbl">'+label+'</span><span class="none">Sin link todavía</span></div>';
     };
-    $("dLinks").innerHTML = doc("Video de presentación", c.video, "▶ Ver video") + doc("CV", c.cv, "Ver CV");
+    $("dLinks").innerHTML = doc("Hoja de vida", c.cv, "Ver CV");
     $("dSchedule").hidden = VISIBLE.indexOf(c.estado) < 0;
     if(isAdmin()){
       renderPres(c); $("pErr").textContent = ""; $("pFecha").value = today();
@@ -592,8 +596,20 @@ body.admin .hm-only{display:none !important}
       return '<div class="pres-item"><div class="ph"><b>'+esc(p.posicion)+'</b><span class="pill r-'+esc(String(p.resultado).replace(/\s/g,""))+'">'+esc(p.resultado)+'</span></div>' +
         '<div class="muted" style="font-size:13px">'+fmtDate(p.fecha)+(p.cuenta?' · '+esc(p.cuenta):'')+'</div>' +
         (p.feedback ? '<p>'+esc(p.feedback)+'</p>' : '') +
-        '<div style="margin-top:6px"><button class="linkbtn" type="button" data-delpres="'+esc(p.pid)+'">Eliminar</button></div></div>';
+        '<div class="pres-acts"><button class="linkbtn" type="button" data-editpres="'+esc(p.pid)+'">Editar</button><button class="linkbtn" type="button" data-delpres="'+esc(p.pid)+'">Eliminar</button></div></div>';
     }).join("") : '<p class="muted" style="margin:0;font-size:14px">Todavía no ha sido presentado a ninguna posición.</p>';
+  }
+  var RESULTADOS = ["Pendiente feedback","Avanza","No seleccionado","Contratado"];
+  function presEditForm(p, c){
+    var opt = function(list, v){ return list.map(function(o){ return '<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>'; }).join(""); };
+    var hired = p.resultado === "Contratado";
+    return '<div class="pres-item editing" data-pid="'+esc(p.pid)+'">' +
+      '<div class="row"><label>Posición o vacante<input class="ep-pos" value="'+esc(p.posicion)+'"></label><label>Cuenta / hiring manager<input class="ep-cuenta" value="'+esc(p.cuenta||"")+'"></label></div>' +
+      '<div class="row"><label>Fecha de presentación<input class="ep-fecha" type="date" value="'+esc(String(p.fecha||"").slice(0,10))+'"></label><label>Resultado<select class="ep-res">'+opt(RESULTADOS, p.resultado)+'</select></label></div>' +
+      '<div class="row ep-hire"'+(hired?'':' hidden')+'><label>Fecha de contratación<input class="ep-fcontr" type="date" value="'+esc(String(c.fechaContratacion||today()).slice(0,10))+'"></label><label>Seniority final <small>(con el que quedó contratado)</small><select class="ep-niv">'+opt(OPT.levels, c.nivelContratado||c.nivel||OPT.levels[0])+'</select></label></div>' +
+      '<label>Feedback<textarea class="ep-fb" rows="2">'+esc(p.feedback||"")+'</textarea></label>' +
+      '<div class="err ep-err" role="alert"></div>' +
+      '<div class="pres-acts"><button class="btn small primary" type="button" data-savepres="'+esc(p.pid)+'">Guardar cambios</button><button class="btn small" type="button" data-cancelpres="1">Cancelar</button></div></div>';
   }
   $("pAdd").addEventListener("click", function(){
     var c = current; if(!c || !isAdmin()) return;
@@ -609,8 +625,33 @@ body.admin .hm-only{display:none !important}
       }, function(e){ $("pErr").textContent = errText(e); })
       .finally(function(){ $("pAdd").disabled = false; });
   });
+  $("dPres").addEventListener("change", function(e){
+    if(!e.target.classList.contains("ep-res")) return;
+    var box = e.target.closest(".pres-item"); box.querySelector(".ep-hire").hidden = e.target.value !== "Contratado";
+  });
   $("dPres").addEventListener("click", function(e){
-    var b = e.target.closest("[data-delpres]"); if(!b || !current) return;
+    if(!current) return;
+    var ed = e.target.closest("[data-editpres]");
+    if(ed){
+      var p = (current.presentaciones||[]).filter(function(x){ return x.pid === ed.dataset.editpres; })[0]; if(!p) return;
+      var item = ed.closest(".pres-item"); item.outerHTML = presEditForm(p, current);
+      var box = $("dPres").querySelector('.pres-item.editing[data-pid="'+CSS.escape(p.pid)+'"]'); if(box) box.querySelector(".ep-res").focus();
+      return;
+    }
+    if(e.target.closest("[data-cancelpres]")){ renderPres(current); return; }
+    var sv = e.target.closest("[data-savepres]");
+    if(sv){
+      var box2 = sv.closest(".pres-item"), q = function(cl){ return box2.querySelector(cl); };
+      var pos = q(".ep-pos").value.trim();
+      if(!pos){ q(".ep-err").textContent = "Escribe la posición o vacante."; q(".ep-pos").focus(); return; }
+      var res = q(".ep-res").value, hired = res === "Contratado", cid0 = current.id;
+      sv.disabled = true;
+      adminCall("updatePres", {pres:{pid:sv.dataset.savepres, posicion:pos, cuenta:q(".ep-cuenta").value.trim(), fecha:q(".ep-fecha").value, resultado:res, feedback:q(".ep-fb").value.trim(),
+        fechaContratacion: hired ? q(".ep-fcontr").value : "", nivelContratado: hired ? q(".ep-niv").value : ""}})
+        .then(function(){ openDetail(byId(cid0)); toast("Presentación actualizada."); }, function(e3){ q(".ep-err").textContent = errText(e3); sv.disabled = false; });
+      return;
+    }
+    var b = e.target.closest("[data-delpres]"); if(!b) return;
     if(b.dataset.confirm !== "1"){ b.dataset.confirm = "1"; b.textContent = "¿Seguro? Clic otra vez"; return; }
     var cid = current.id;
     adminCall("deletePres", {pid:b.dataset.delpres}).then(function(){ openDetail(byId(cid)); }, function(e2){ toast(errText(e2), true); });
@@ -625,7 +666,7 @@ body.admin .hm-only{display:none !important}
     var lastRec = ""; try { lastRec = localStorage.getItem("pool-rec") || ""; } catch(e){}
     var x = c || {id:"", estado:"Disponible", ingreso:today(), pais:"Colombia", modalidad:"Híbrido", ingles:"B2", nivel:"Jr", reclutador:lastRec};
     $("eTitle").textContent = c ? "Editar candidato" : "Agregar candidato";
-    var map = {eNombre:"nombre", eCeipal:"ceipal", eCedula:"cedula", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eWhy:"why", eVideo:"video", eCv:"cv", eRec:"reclutador", eFContr:"fechaContratacion", eNivContr:"nivelContratado"};
+    var map = {eNombre:"nombre", eCeipal:"ceipal", eCedula:"cedula", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eWhy:"why", eCv:"cv", eRec:"reclutador", eFContr:"fechaContratacion", eNivContr:"nivelContratado"};
     Object.keys(map).forEach(function(k){
       var v = x[map[k]] == null ? "" : String(x[map[k]]);
       var el = $(k);
@@ -654,7 +695,7 @@ body.admin .hm-only{display:none !important}
     var cand = {originalId: editing ? editing.id : "", ceipal:$("eCeipal").value.trim(), cedula:$("eCedula").value.replace(/[\s.,\-]/g,""), nombre:nombre, estado:$("eEstado").value, ingreso:$("eIngreso").value,
       pais:$("ePais").value.trim(), ciudad:$("eCiudad").value.trim(), modalidad:$("eModalidad").value, disponibilidad:$("eDisp").value.trim(),
       ingles:$("eIngles").value, expectativa:$("eExp").value, nivel:$("eNivel").value, resumen:$("eResumen").value.trim(), why:$("eWhy").value.trim(),
-      video:$("eVideo").value.trim(), cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(),
+      cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(),
       fechaContratacion: $("eEstado").value === "Contratado" ? $("eFContr").value : "", nivelContratado: $("eEstado").value === "Contratado" ? $("eNivContr").value : ""};
     try { if(cand.reclutador) localStorage.setItem("pool-rec", cand.reclutador); } catch(e3){}
     adminCall("saveCandidate", {candidate:cand}).then(function(){ $("dlgEdit").close(); toast("Guardado."); }, function(e2){ $("eErr").textContent = errText(e2); })
@@ -724,7 +765,7 @@ body.admin .hm-only{display:none !important}
     var hi = rows.findIndex(function(r){ return r.some(function(x){ return keyCols.indexOf(norm(x)) >= 0; }); });
     if(hi < 0){ toast("No encontré las columnas Nombre, Número de documento o CEIPAL Applicant ID. Usa la plantilla de carga.", true); return; }
     var h = rows[hi].map(norm);
-    var alias = {id:["id interno","id"], ceipal:["ceipal applicant id","ceipal id","applicant id","ceipal"], cedula:["numero de documento","documento","cedula","cc"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], video:["link video","video"], reclutador:["reclutador","recruiter"], fechaContratacion:["fecha de contratacion"], nivelContratado:["seniority final","seniority contratado","nivel contratado"]};
+    var alias = {id:["id interno","id"], ceipal:["ceipal applicant id","ceipal id","applicant id","ceipal"], cedula:["numero de documento","documento","cedula","cc"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], reclutador:["reclutador","recruiter"], fechaContratacion:["fecha de contratacion"], nivelContratado:["seniority final","seniority contratado","nivel contratado"]};
     var idx = {};
     Object.keys(alias).forEach(function(k){ idx[k] = -1; alias[k].some(function(a){ var i = h.indexOf(norm(a)); if(i >= 0){ idx[k] = i; return true; } return false; }); });
     var out = [];
@@ -753,7 +794,7 @@ body.admin .hm-only{display:none !important}
       "Estado": c.estado || "", "Reclutador": c.reclutador || "", "Nivel propuesto": c.nivel || "", "Seniority final": c.nivelContratado || "",
       "Fecha de ingreso": c.ingreso || "", "Fecha de contratación": c.fechaContratacion || "", "País": c.pais || "", "Ciudad": c.ciudad || "",
       "Modalidad": c.modalidad || "", "Disponibilidad": c.disponibilidad || "", "Inglés": c.ingles || "", "Expectativa total (COP)": Number(c.expectativa) || "",
-      "Resumen de experiencia": c.resumen || "", "Por qué este nivel": c.why || "", "Link CV": c.cv || "", "Link video": c.video || "", "ID interno": c.id || ""
+      "Resumen de experiencia": c.resumen || "", "Por qué este nivel": c.why || "", "Link CV": c.cv || "", "ID interno": c.id || ""
     }; });
     var ws = XLSX.utils.json_to_sheet(rows);
     ws["!cols"] = Object.keys(rows[0]).map(function(k){ return {wch: /Resumen|Por qué|Link/.test(k) ? 40 : Math.max(12, k.length + 2)}; });
