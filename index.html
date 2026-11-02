@@ -5,7 +5,1151 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Pool de Supervisores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Pool de Supervisores</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: encabezado con tablero + barra de filtros + grilla de fichas; perfil, agenda y admin en diálogos */
+:root{
+  --bg:#F3F5F8; --card:#FFFFFF; --ink:#142131; --muted:#5B6878; --line:#DCE2EA;
+  --accent:#2350C8; --accent-soft:#E7EDFC;
+  --jr:#0E7C66; --jr-soft:#E0F3EE; --sp:#6A3FC1; --sp-soft:#EFE8FB; --sr:#A35A00; --sr-soft:#FBEEDB;
+  --ok:#2E7D32; --ok-soft:#E5F3E6; --warn:#9A5B00; --warn-soft:#FFF1D6; --bad:#B3261E; --bad-soft:#FCE8E6;
+  --display:"Manrope","Segoe UI",system-ui,sans-serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --r:10px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{background:var(--ink);color:#fff;position:relative}
+.lang{position:absolute;top:10px;right:max(16px,env(safe-area-inset-right,0px));background:transparent;border:1px solid #4B5D78;color:#C9D3E3;border-radius:99px;padding:3px 10px;font:600 12px var(--body);cursor:pointer;letter-spacing:.04em}
+.lang b{color:#fff}
+.lang:hover{border-color:#9FB4D8}
+.lang:focus-visible{outline:2px solid #fff;outline-offset:2px}
+header .wrap{padding-block:28px 24px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.eyebrow{font:700 12px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:#9FB4D8}
+h1{font:800 30px/1.15 var(--display);margin:8px 0 6px;text-wrap:balance}
+header p{margin:0;color:#C9D3E3;max-width:60ch;white-space:pre-line}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,.08);border-radius:var(--r);padding:10px 14px;min-width:104px}
+.stat.total{background:rgba(255,255,255,.16)}
+.stat b{display:block;font:800 22px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:#C9D3E3}
+.stat i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.toolbar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.toolbar .wrap{padding-block:14px;display:flex;flex-wrap:wrap;gap:10px}
+.toolbar .wrap input{flex:2 1 260px}
+.toolbar .wrap select{flex:1 1 150px;width:auto}
+.toolbar input,.toolbar select{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:0 12px}
+main .wrap{padding-block:22px 40px}
+.resultline{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;color:var(--muted);font-size:14px;gap:12px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.card:hover{border-color:#B7C3D3}
+.top{display:flex;gap:12px;align-items:center}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font:800 15px var(--display);flex:none}
+.card .av{width:36px;height:36px;font-size:13px}
+.name{font:700 17px/1.2 var(--display);margin:0}
+.card .name{font-size:15px}
+.sub{font-size:13px;color:var(--muted);margin:2px 0 0}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.rec-tag{font-size:12.5px;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:4px 8px;align-self:flex-start}
+.rec-tag.none{color:var(--muted);background:var(--bg)}
+.ids{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ids b{color:var(--ink);font-weight:600}
+.ids .miss{color:var(--warn)}
+
+.pill{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.lv-Jr{background:var(--jr-soft);color:var(--jr)} .lv-Specialist{background:var(--sp-soft);color:var(--sp)} .lv-Senior{background:var(--sr-soft);color:var(--sr)}
+.st-Disponible{background:var(--ok-soft);color:var(--ok)} .st-Enproceso{background:var(--warn-soft);color:var(--warn)}
+.st-Contratado{background:var(--accent-soft);color:var(--accent)} .st-Descartado,.st-Revalidar{background:var(--bad-soft);color:var(--bad)}
+.r-Avanza{background:var(--warn-soft);color:var(--warn)} .r-Contratado{background:var(--ok-soft);color:var(--ok)} .r-Noseleccionado{background:var(--bad-soft);color:var(--bad)} .r-Pendientefeedback{background:var(--accent-soft);color:var(--accent)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin:0;font-size:14px}
+.card .facts{font-size:13px;gap:6px 10px}
+.facts dt{color:var(--muted);font-size:12px}
+.facts dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.summary{font-size:13px;color:var(--muted);margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:#9DACC0}
+a.btn{text-decoration:none;color:var(--ink);display:inline-flex;align-items:center}
+.btn.primary,a.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.small{padding:5px 10px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.card .btn{padding:6px 8px;font-size:13.5px;flex:1 1 auto;white-space:nowrap}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.linkbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:40px;text-align:center;color:var(--muted)}
+dialog{border:none;border-radius:14px;padding:0;width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 40px);color:var(--ink);background:var(--card)}
+dialog.narrow{width:min(420px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(15,25,40,.5)}
+.dlg-head{padding:20px 22px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.dlg-body{padding:18px 22px;overflow:auto}
+.dlg-foot{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.x{border:none;background:none;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);padding:4px 8px}
+h2{font:800 20px/1.2 var(--display);margin:0}
+h3{font:700 14px/1.2 var(--display);margin:18px 0 8px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.profile-box{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.lvl-line{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:600;color:var(--muted)}
+.docs{display:grid;grid-template-columns:1fr;gap:10px;max-width:340px}
+.doc{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.doc .lbl{font:700 13px var(--display);color:var(--muted)}
+.doc a{align-self:flex-start;text-decoration:none;color:#fff;background:var(--accent);border-radius:8px;padding:7px 12px;font-weight:600;font-size:14px}
+.doc a:hover{filter:brightness(1.08)}
+.doc .none{font-size:14px;color:var(--muted)}
+.doc.empty-doc{border-style:dashed}
+.pres{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.pres-item{border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px}
+.pres-item .ph{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.pres-item p{margin:6px 0 0;color:var(--muted)}
+.pres-form{background:var(--bg);border-radius:8px;padding:12px}
+.pres-acts{display:flex;gap:14px;align-items:center;margin-top:8px}
+.pres-item.editing{border-color:var(--accent);background:var(--accent-soft)}
+.pres-item.editing label{margin-bottom:8px}
+.pres-form label{margin-bottom:8px}
+.muted{color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:12px}
+label input,label select,label textarea{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--card);color:var(--ink);font-weight:400;font-size:15px}
+label small{font-weight:400}
+textarea{resize:vertical;min-height:70px}
+.err{color:var(--bad);font-size:13px;font-weight:600;min-height:1em}
+.note{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+.ok-box{text-align:center;padding:14px 4px 4px}
+.ok-box .big{width:52px;height:52px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;margin:0 auto 10px;font-size:26px;font-weight:800}
+.ok-box p{margin:6px 0 0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ok-soft);color:var(--ok);border-radius:8px;padding:10px 14px;font-size:14px;box-shadow:0 4px 18px rgba(0,0,0,.15)}
+footer{color:var(--muted);font-size:13px}
+footer .wrap{padding-block:18px 30px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line)}
+.linkbtn{border:none;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;font-size:13px}
+#adminbar{background:#1E2C40;color:#fff;position:sticky;top:0;z-index:6}
+#adminbar .wrap{padding-block:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#adminbar b{font-family:var(--display);margin-right:auto;display:flex;align-items:center;gap:10px}
+#adminbar .btn{background:transparent;color:#fff;border-color:#4B5D78}
+#adminbar .btn.save{background:#fff;color:var(--ink);border-color:#fff}
+.badge{display:inline-block;min-width:20px;padding:0 6px;margin-left:4px;border-radius:99px;background:#4B5D78;color:#fff;font-size:12px;line-height:18px;text-align:center}
+.badge.on{background:#F2B34B;color:#3A2600}
+.rv-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.rv-item{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px}
+.rv-item .muted{font-size:13px}
+.chk{flex-direction:row;align-items:center;gap:8px;font-weight:600}
+.chk input{width:18px;height:18px;margin:0}
+#saving{font:600 12px var(--body);background:#F2B34B;color:#3A2600;border-radius:99px;padding:2px 9px}
+.loading{opacity:.6;pointer-events:none}
+button:disabled{opacity:.6;cursor:wait}
+body.admin .toolbar{top:56px}
+.admin-only{display:none !important}
+body.admin .admin-only{display:revert !important}
+body.admin .hm-only{display:none !important}
+@media (max-width:820px){.toolbar .wrap input{flex-basis:100%} body.admin .toolbar{position:static}}
+@media (max-width:480px){.row,.facts,.docs{grid-template-columns:1fr} h1{font-size:25px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="adminbar" class="admin-only">
+  <div class="wrap">
+    <b>Modo TA <span id="saving" hidden>Guardando…</span></b>
+    <button class="btn small" id="btnAdd" type="button">+ Agregar candidato</button>
+    <button class="btn small" id="btnReval" type="button">Revalidar <span class="badge" id="revalN">0</span></button>
+    <button class="btn small" id="btnImport" type="button">Cargar Excel</button>
+    <button class="btn small" id="btnExport" type="button">Descargar Excel</button>
+    <button class="btn small" id="btnSettings" type="button">Configuración</button>
+    <button class="btn small" id="btnExit" type="button">Salir</button>
+    <input type="file" id="xlsFile" accept=".xlsx,.xls,.csv" hidden>
+  </div>
+</div>
+
+<header>
+  <button class="lang" id="btnLang" type="button"></button>
+  <div class="wrap">
+    <div>
+      <div class="eyebrow" id="hEyebrow">Talent Acquisition · Supervisores</div>
+      <h1 id="hTitle">Pool de Supervisores</h1>
+      <p id="hSub">Candidatos a supervisor pre-evaluados por TA. Revisa sus perfiles y solicita entrevista con el que te interese.</p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <input id="q" type="search" placeholder="Buscar por nombre, ciudad o experiencia" aria-label="Buscar">
+    <select id="fEstado" aria-label="Estado"></select>
+    <select id="fPais" aria-label="País"><option value="">Todos los países</option></select>
+    <select id="fCiudad" aria-label="Ciudad"><option value="">Todas las ciudades</option></select>
+    <select id="fRec" class="admin-only" aria-label="Reclutador"><option value="">Todos los reclutadores</option></select>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <div class="resultline"><span id="count"></span><span class="admin-only muted">En modo TA ves también contratados, descartados y por revalidar.</span></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span id="updated"></span>
+    <button class="linkbtn hm-only" id="btnAdmin" type="button">Acceso TA</button>
+  </div>
+</footer>
+
+<!-- Acceso TA -->
+<dialog id="dlgLogin" class="narrow" aria-labelledby="lTitle">
+  <div class="dlg-head"><h2 id="lTitle">Acceso TA</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fLogin" novalidate>
+    <div class="dlg-body">
+      <p class="muted" id="lHelp" style="margin:0 0 12px;font-size:14px">Solo para el equipo de Talent Acquisition.</p>
+      <label>Contraseña<input id="lPass" type="password" autocomplete="current-password"></label>
+      <label id="lConfWrap" hidden>Repite la contraseña<input id="lConf" type="password" autocomplete="new-password"></label>
+      <div class="err" id="lErr" role="alert"></div>
+    </div>
+    <div class="dlg-foot"><button class="btn" data-close type="button">Cancelar</button><button class="btn primary" type="submit" id="lBtn">Entrar</button></div>
+  </form>
+</dialog>
+
+<!-- Perfil -->
+<dialog id="dlgDetail" aria-labelledby="dName">
+  <div class="dlg-head">
+    <div class="top">
+      <div class="av" id="dAv"></div>
+      <div><h2 id="dName" data-notr></h2><p class="sub" id="dSub"></p></div>
+    </div>
+    <button class="x" data-close aria-label="Cerrar">×</button>
+  </div>
+  <div class="dlg-body">
+    <div class="pills" id="dPills"></div>
+    <dl class="facts" id="dFacts" style="margin-top:14px"></dl>
+    <h3>Resumen del perfil</h3>
+    <div class="profile-box">
+      <div class="lvl-line"><span>Nivel propuesto por TA</span><span id="dLevel"></span></div>
+      <p id="dWhy" data-notr class="muted" style="font-size:14px;margin:0"></p>
+      <p id="dSummary" style="margin:0;font-size:15px"></p>
+    </div>
+    <h3>CV</h3>
+    <div class="docs" id="dLinks"></div>
+    <div class="admin-only">
+      <h3>Presentaciones y feedback <span style="font-weight:500;text-transform:none;letter-spacing:0">(solo TA)</span></h3>
+      <div class="pres" id="dPres"></div>
+      <div class="pres-form">
+        <div class="row">
+          <label>Posición o vacante<input id="pPos" placeholder="Supervisor Customer Service"></label>
+          <label>Cuenta / hiring manager<input id="pCuenta" placeholder="Cuenta X · Juan Pérez"></label>
+        </div>
+        <div class="row">
+          <label>Fecha de presentación<input id="pFecha" type="date"></label>
+          <label>Resultado<select id="pRes"><option>Pendiente feedback</option><option>Avanza</option><option>No seleccionado</option><option>Contratado</option></select></label>
+        </div>
+        <div class="row" id="pHireRow"><label>Fecha de contratación <small>(si quedó contratado)</small><input id="pFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="pNivContr"></select></label></div>
+        <label>Feedback<textarea id="pFb" rows="2" placeholder="Qué dijo el hiring manager"></textarea></label>
+        <div class="err" id="pErr" role="alert"></div>
+        <button class="btn small primary" type="button" id="pAdd">Agregar presentación</button>
+      </div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" data-close type="button">Cerrar</button>
+    <button class="btn admin-only" id="dEdit" type="button">Editar</button>
+    <button class="btn primary hm-only" id="dSchedule" type="button">Quiero agendar entrevista</button>
+  </div>
+</dialog>
+
+<!-- Agendar -->
+<dialog id="dlgSched" aria-labelledby="sTitle">
+  <div class="dlg-head"><div><h2 id="sTitle">Solicitar entrevista</h2><p class="sub" id="sSub"></p></div><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fSched" novalidate>
+    <div class="dlg-body" id="sForm">
+      <div class="row">
+        <label>Tu nombre<input id="sHm" autocomplete="name"></label>
+        <label>Tu correo<input id="sMail" type="email" autocomplete="email" placeholder="nombre@empresa.com"></label>
+      </div>
+      <div class="row">
+        <label>Cargo o cuenta<input id="sRole" placeholder="Coordinador · Cuenta Healthcare"></label>
+        <label>Modalidad<select id="sMode"><option>Teams</option><option>Presencial</option><option>Llamada</option></select></label>
+      </div>
+      <div class="row">
+        <label>Fecha preferida<input id="sDate" type="date"></label>
+        <label>Hora (hora Colombia)<input id="sTime" type="time"></label>
+      </div>
+      <label>Opción alterna <small>(opcional)</small><input id="sAlt" placeholder="Viernes en la tarde"></label>
+      <label>Comentarios <small>(opcional)</small><textarea id="sNotes" placeholder="Para qué vacante o equipo, qué te gustaría validar..."></textarea></label>
+      <div class="err" id="sErr" role="alert"></div>
+    </div>
+    <div class="dlg-body" id="sDone" hidden>
+      <div class="ok-box">
+        <div class="big">✓</div>
+        <h2 id="sDoneTitle">Solicitud enviada</h2>
+        <p class="muted" id="sDoneText"></p>
+      </div>
+      <p class="muted" id="sBackup" style="font-size:13px;text-align:center;margin:14px 0 0" hidden>¿No se abrió Outlook? <a href="#" id="sMailto">Abrir con mi app de correo</a> · <a href="#" id="sOutlook2" target="_blank" rel="noopener">Abrir Outlook web</a></p>
+    </div>
+    <div class="dlg-foot">
+      <span id="sFootForm" style="display:contents">
+        <button class="btn" data-close type="button">Cancelar</button>
+        <button class="btn primary" type="submit" id="sSend">Enviar solicitud</button>
+      </span>
+      <span id="sFootDone" style="display:none"><button class="btn primary" data-close type="button">Listo</button></span>
+    </div>
+  </form>
+</dialog>
+
+<!-- Editar candidato -->
+<dialog id="dlgEdit" aria-labelledby="eTitle">
+  <div class="dlg-head"><h2 id="eTitle">Candidato</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fEdit" novalidate>
+    <div class="dlg-body">
+      <div class="row"><label>Nombre<input id="eNombre"></label><label>CEIPAL Applicant ID<input id="eCeipal" placeholder="Ej. 123456"></label></div>
+      <div class="row"><label>Número de documento<input id="eCedula" placeholder="Sin puntos ni espacios"></label><span></span></div>
+      <div class="row"><label>Estado<select id="eEstado"></select></label><label>Fecha de ingreso al pool<input id="eIngreso" type="date"></label></div>
+      <div class="row"><label>País<input id="ePais" placeholder="Colombia"></label><label>Ciudad<input id="eCiudad" placeholder="Barranquilla"></label></div>
+      <div class="row"><label>Modalidad<select id="eModalidad"></select></label><label>Disponibilidad<input id="eDisp" placeholder="2 semanas"></label></div>
+      <div class="row"><label>Inglés (prueba)<select id="eIngles"></select></label><label>Expectativa total (COP)<input id="eExp" type="number" min="0" step="50000"></label></div>
+      <div class="row"><label>Nivel propuesto<select id="eNivel"></select></label><label>Reclutador<input id="eRec" list="recList" placeholder="Nombre del reclutador"></label></div>
+      <datalist id="recList"></datalist>
+      <div class="row" id="eHireRow"><label>Fecha de contratación <small>(si quedó contratado)</small><input id="eFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="eNivContr"></select></label></div>
+      <label>Resumen de experiencia (3–4 líneas)<textarea id="eResumen" rows="4"></textarea></label>
+      <label>Por qué este nivel (una línea)<input id="eWhy"></label>
+      <div class="row"><label>Link del CV<input id="eCv" type="url" placeholder="https://..."></label></div>
+      <div class="err" id="eErr" role="alert"></div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn danger" type="button" id="eDelete">Eliminar</button>
+      <span style="flex:1"></span>
+      <button class="btn" data-close type="button">Cancelar</button>
+      <button class="btn primary" type="submit">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Revalidar -->
+<dialog id="dlgReval" aria-labelledby="rvTitle">
+  <div class="dlg-head"><div><h2 id="rvTitle">Candidatos por revalidar</h2><p class="sub" id="rvSub"></p></div><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <div class="dlg-body">
+    <div class="rv-list" id="rvList"></div>
+    <div id="rvMailBox">
+      <h3 style="margin-top:4px">Correo de revalidación</h3>
+      <label>Para <small>(separados por coma)</small><input id="rvTo" placeholder="dani@empresa.com, mari@empresa.com"></label>
+      <label>Asunto<input id="rvSubj"></label>
+      <label>Mensaje<textarea id="rvBody" rows="9"></textarea></label>
+      <div class="err" id="rvErr" role="alert"></div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" data-close type="button">Cerrar</button>
+    <button class="btn" id="rvCopy" type="button">Copiar texto</button>
+    <button class="btn" id="rvOutlook" type="button">Abrir en mi correo</button>
+    <button class="btn primary" id="rvSend" type="button">Enviar correo</button>
+  </div>
+</dialog>
+
+<!-- Configuración -->
+<dialog id="dlgSettings" aria-labelledby="cTitle">
+  <div class="dlg-head"><h2 id="cTitle">Configuración</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fSettings" novalidate>
+    <div class="dlg-body">
+      <h3 style="margin-top:0">Encabezado de la página</h3>
+      <label>Etiqueta superior<input id="cEyebrow"></label>
+      <label>Nombre de la página<input id="cTitleIn"></label>
+      <label>Texto debajo del nombre<textarea id="cSub" rows="2"></textarea></label>
+      <h3>Solicitudes de entrevista</h3>
+      <label>Correos que reciben las solicitudes <small>(separados por coma)</small><input id="cMails" placeholder="dani@empresa.com, mari@empresa.com"></label>
+      <p class="muted" style="font-size:13px;margin:-4px 0 0">Cuando un supervisor pide entrevista, el correo les llega solo a estas personas y queda registrado en la pestaña Solicitudes de tu hoja.</p>
+      <h3>Revalidación automática</h3>
+      <div class="row">
+        <label>Días para revalidar<input id="cRevDias" type="number" min="1" max="365" step="1"></label>
+        <label>Aplica a<select id="cRevEst"><option value="En proceso">Solo candidatos en proceso</option><option value="Disponible,En proceso">Disponibles y en proceso</option></select></label>
+      </div>
+      <label class="chk"><input id="cRevMail" type="checkbox"> Enviar correo automático cada mañana con los nuevos por revalidar</label>
+      <p class="muted" style="font-size:13px;margin:-4px 0 0">Cuando un candidato cumple estos días en el mismo estado, pasa solo a <b>Revalidar</b> y deja de verse para los coordinadores. El correo automático llega a los correos de arriba.</p>
+      <h3>Cambiar contraseña de acceso TA <span style="font-weight:500;text-transform:none;letter-spacing:0">(opcional)</span></h3>
+      <div class="row"><label>Nueva contraseña<input id="cPass" type="password" autocomplete="new-password"></label><label>Repítela<input id="cPass2" type="password" autocomplete="new-password"></label></div>
+      <div class="err" id="cErr" role="alert"></div>
+    </div>
+    <div class="dlg-foot"><button class="btn" data-close type="button">Cancelar</button><button class="btn primary" type="submit">Aplicar</button></div>
+  </form>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+<script>
+/* Idioma: español (por defecto) o inglés. Se elige con el botón ES | EN o con ?lang=en en el link.
+   Los datos se siguen guardando en español en la hoja; solo cambia lo que se ve en pantalla. */
+(function(){
+  "use strict";
+  var q = (location.search.match(/[?&]lang=(en|es)\b/i) || [])[1];
+  var saved = null; try { saved = localStorage.getItem("pool-lang"); } catch(e){}
+  var LANG = (q || saved || "es").toLowerCase() === "en" ? "en" : "es";
+  if(q){ try { localStorage.setItem("pool-lang", LANG); } catch(e){} }
+  window.POOL_LANG = LANG;
+  document.documentElement.lang = LANG;
+
+  var btn = document.getElementById("btnLang");
+  if(btn){
+    btn.innerHTML = LANG === "en" ? '<span>ES</span> | <b>EN</b>' : '<b>ES</b> | <span>EN</span>';
+    btn.setAttribute("aria-label", LANG === "en" ? "Cambiar a español" : "Switch to English");
+    btn.addEventListener("click", function(){
+      var next = LANG === "en" ? "es" : "en";
+      try { localStorage.setItem("pool-lang", next); } catch(e){}
+      var u = new URL(location.href); u.searchParams.delete("lang"); if(next === "en") u.searchParams.set("lang", "en");
+      location.href = u.toString();
+    });
+  }
+  if(LANG !== "en") return;
+
+  // Textos exactos
+  var D = {
+    "Modo TA":"TA mode", "Guardando…":"Saving…", "+ Agregar candidato":"+ Add candidate", "Cargar Excel":"Upload Excel",
+    "Descargar Excel":"Download Excel", "Configuración":"Settings", "Salir":"Log out",
+    "Talent Acquisition · Supervisores":"Talent Acquisition · Supervisors", "Pool de Supervisores":"Supervisor Pool",
+    "Candidatos a supervisor pre-evaluados por TA. Revisa sus perfiles y solicita entrevista con el que te interese.":"Supervisor candidates pre-screened by TA. Review their profiles and request an interview with the ones you like.",
+    "Buscar por nombre, ciudad o experiencia":"Search by name, city or experience", "Buscar":"Search", "Estado":"Status", "País":"Country",
+    "Ciudad":"City", "Reclutador":"Recruiter", "Todos los países":"All countries", "Todas las ciudades":"All cities",
+    "Todos los reclutadores":"All recruiters", "Todos los estados":"All statuses", "Disponibles y en proceso":"Available and in process",
+    "Disponibles":"Available", "Contratados":"Hired", "Total en el pool":"Total in the pool",
+    "En modo TA ves también contratados, descartados y por revalidar.":"In TA mode you also see hired, discarded and to-revalidate candidates.",
+    "Acceso TA":"TA access", "Cerrar":"Close", "Solo para el equipo de Talent Acquisition.":"Talent Acquisition team only.",
+    "Contraseña":"Password", "Repite la contraseña":"Repeat the password", "Cancelar":"Cancel", "Entrar":"Log in",
+    "Crear contraseña TA":"Create TA password", "Crear y entrar":"Create and log in",
+    "Es la primera vez. Crea la contraseña del modo TA y compártela solo con tu equipo.":"First time here. Create the TA mode password and share it only with your team.",
+    "Escribe la contraseña.":"Enter the password.", "Usa al menos 6 caracteres.":"Use at least 6 characters.",
+    "Las contraseñas no coinciden.":"Passwords don't match.", "Contraseña incorrecta.":"Wrong password.",
+    "Resumen del perfil":"Profile summary", "Nivel propuesto por TA":"Level proposed by TA", "CV":"Résumé",
+    "Presentaciones y feedback":"Presentations and feedback", "(solo TA)":"(TA only)", "Posición o vacante":"Position or vacancy",
+    "Cuenta / hiring manager":"Account / hiring manager", "Cuenta X · Juan Pérez":"Account X · John Smith",
+    "Fecha de presentación":"Presentation date", "Resultado":"Result", "Pendiente feedback":"Pending feedback", "Avanza":"Moving forward",
+    "No seleccionado":"Not selected", "Contratado":"Hired", "Fecha de contratación":"Hire date", "(si quedó contratado)":"(if hired)",
+    "Seniority final":"Final seniority", "(con el que quedó contratado)":"(level they were hired at)", "Feedback":"Feedback",
+    "Qué dijo el hiring manager":"What the hiring manager said", "Agregar presentación":"Add presentation", "Editar":"Edit",
+    "Quiero agendar entrevista":"Request an interview", "Solicitar entrevista":"Request an interview", "Tu nombre":"Your name",
+    "Tu correo":"Your email", "nombre@empresa.com":"name@company.com", "Cargo o cuenta":"Role or account",
+    "Coordinador · Cuenta Healthcare":"Coordinator · Healthcare account", "Modalidad":"Modality", "Presencial":"On-site",
+    "Llamada":"Phone call", "Híbrido":"Hybrid", "Remoto":"Remote", "Fecha preferida":"Preferred date", "Hora (hora Colombia)":"Time (Colombia time)",
+    "Opción alterna":"Alternative option", "(opcional)":"(optional)", "Viernes en la tarde":"Friday afternoon", "Comentarios":"Comments",
+    "Para qué vacante o equipo, qué te gustaría validar...":"Which vacancy or team, what you'd like to assess...",
+    "Solicitud enviada":"Request sent", "Enviar solicitud":"Send request", "Enviando…":"Sending…", "Listo":"Done",
+    "¿No se abrió Outlook?":"Outlook didn't open?", "Abrir con mi app de correo":"Open with my email app", "Abrir Outlook web":"Open Outlook web",
+    "Escribe tu nombre.":"Enter your name.", "Elige una fecha.":"Pick a date.", "Elige una hora.":"Pick a time.", "Revisa tu correo.":"Check your email.",
+    "Candidato":"Candidate", "Agregar candidato":"Add candidate", "Editar candidato":"Edit candidate", "Nombre":"Name", "Ej. 123456":"E.g. 123456",
+    "Número de documento":"ID number", "Sin puntos ni espacios":"No dots or spaces", "Fecha de ingreso al pool":"Date added to the pool",
+    "Disponibilidad":"Availability", "2 semanas":"2 weeks", "Inglés (prueba)":"English (test)", "Expectativa total (COP)":"Total expectation (COP)",
+    "Nivel propuesto":"Proposed level", "Nombre del reclutador":"Recruiter's name", "Resumen de experiencia (3–4 líneas)":"Experience summary (3–4 lines)",
+    "Por qué este nivel (una línea)":"Why this level (one line)", "Link del CV":"Résumé link", "Eliminar":"Delete", "Guardar":"Save",
+    "Guardar cambios":"Save changes", "¿Seguro? Clic otra vez":"Sure? Click again", "El nombre es obligatorio.":"Name is required.",
+    "Encabezado de la página":"Page header", "Etiqueta superior":"Top label", "Nombre de la página":"Page name",
+    "Texto debajo del nombre":"Text below the name", "Solicitudes de entrevista":"Interview requests",
+    "Correos que reciben las solicitudes":"Emails that receive the requests", "(separados por coma)":"(comma-separated)",
+    "Cuando un supervisor pide entrevista, el correo les llega solo a estas personas y queda registrado en la pestaña Solicitudes de tu hoja.":"When someone requests an interview, the email goes only to these people and is logged in the Solicitudes tab of your sheet.",
+    "Cambiar contraseña de acceso TA":"Change TA access password", "Nueva contraseña":"New password", "Repítela":"Repeat it", "Aplicar":"Apply",
+    "La nueva contraseña debe tener al menos 6 caracteres.":"The new password must be at least 6 characters.",
+    "La contraseña debe tener al menos 6 caracteres.":"The password must be at least 6 characters.",
+    "Disponible":"Available", "En proceso":"In process", "Revalidar":"Revalidate", "Descartado":"Discarded",
+    "Inglés":"English", "Expectativa total":"Total expectation", "Ver perfil":"View profile", "Agendar":"Schedule", "Sin nivel":"No level",
+    "Sin reclutador asignado":"No recruiter assigned", "Sin CEIPAL ID":"No CEIPAL ID", "Sin documento":"No ID number", "Ubicación":"Location", "Reclutador:":"Recruiter:",
+    "Sin asignar":"Unassigned", "Sin resumen todavía.":"No summary yet.", "Hoja de vida":"Résumé", "Ver CV":"View résumé", "Sin link todavía":"No link yet",
+    "Todavía no ha sido presentado a ninguna posición.":"Not presented to any position yet.", "Escribe la posición o vacante.":"Enter the position or vacancy.",
+    "Ningún candidato coincide con estos filtros.":"No candidates match these filters.",
+    "Aún no hay candidatos. Usa “+ Agregar candidato”, “Cargar Excel” o escríbelos directo en la hoja.":"No candidates yet. Use “+ Add candidate”, “Upload Excel” or type them directly in the sheet.",
+    "Pronto verás aquí los candidatos disponibles.":"Available candidates will show up here soon.", "Cargando candidatos…":"Loading candidates…",
+    "No se pudieron cargar los candidatos. Recarga la página en un momento.":"Couldn't load the candidates. Reload the page in a moment.",
+    "La página aún no está conectada a la hoja. Pega la URL del Apps Script en":"The page isn't connected to the sheet yet. Paste the Apps Script URL in",
+    "Guardado.":"Saved.", "Candidato eliminado.":"Candidate deleted.", "Presentación actualizada.":"Presentation updated.",
+    "Configuración guardada.":"Settings saved.", "Configuración y contraseña guardadas.":"Settings and password saved.",
+    "Tu sesión TA expiró. Vuelve a entrar.":"Your TA session expired. Please log in again.",
+    "No hay conexión con la hoja. Revisa tu internet e inténtalo de nuevo.":"Can't reach the sheet. Check your internet and try again.",
+    "Algo salió mal. Inténtalo de nuevo.":"Something went wrong. Please try again.", "Este candidato ya no está disponible.":"This candidate is no longer available.",
+    "Faltan datos de la solicitud.":"Some request details are missing.", "No encontré al candidato.":"Candidate not found.",
+    "No encontré esa presentación. Recarga la página.":"Presentation not found. Reload the page.",
+    "No hay candidatos con estos filtros.":"No candidates with these filters.", "El archivo no trae candidatos para cargar.":"The file has no candidates to upload.",
+    "No pude leer el archivo. Revisa que sea la plantilla de carga.":"Couldn't read the file. Make sure it's the upload template.",
+    "No encontré las columnas Nombre, Número de documento o CEIPAL Applicant ID. Usa la plantilla de carga.":"Couldn't find the Nombre, Número de documento or CEIPAL Applicant ID columns. Use the upload template.",
+    "No se pudo cargar el lector de Excel. Guarda la hoja como CSV e intenta de nuevo.":"Couldn't load the Excel reader. Save the sheet as CSV and try again.",
+    "No se pudo cargar el generador de Excel. Recarga la página.":"Couldn't load the Excel generator. Reload the page.",
+    "Revalidar":"Revalidate", "Candidatos por revalidar":"Candidates to revalidate", "Correo de revalidación":"Revalidation email",
+    "Para":"To", "Asunto":"Subject", "Mensaje":"Message", "Copiar texto":"Copy text", "Abrir en mi correo":"Open in my email",
+    "Enviar correo":"Send email", "Ya lo revalidé":"Revalidated", "Correo enviado.":"Email sent.", "Texto copiado.":"Text copied.",
+    "Escribe al menos un correo.":"Enter at least one email.", "Listo, el conteo de días empieza de nuevo.":"Done, the day count starts over.",
+    "Revalidación automática":"Automatic revalidation", "Días para revalidar":"Days before revalidation", "Aplica a":"Applies to",
+    "Solo candidatos en proceso":"In-process candidates only", "Disponibles y en proceso":"Available and in process",
+    "Enviar correo automático cada mañana con los nuevos por revalidar":"Send an automatic email every morning with new candidates to revalidate",
+    "Cuando un candidato cumple estos días en el mismo estado, pasa solo a":"When a candidate reaches this many days in the same status, it automatically moves to",
+    "y deja de verse para los coordinadores. El correo automático llega a los correos de arriba.":"and is hidden from coordinators. The automatic email goes to the addresses above.",
+    "En este estado desde":"In this status since", "CEIPAL ID:":"CEIPAL ID:"
+  };
+  // Textos que llevan números o nombres
+  var R = [
+    [/^(\d+) candidatos?$/, function(m, n){ return n + (n === "1" ? " candidate" : " candidates"); }],
+    [/^(\d+) días: revalidar$/, "$1 days: revalidate"],
+    [/^Presentado (\d+)×$/, "Presented $1×"],
+    [/^Seniority final: (.*?)(?: \(propuesto: (.*?)\))?( · .*)?$/, function(m, a, b, c){ return "Final seniority: " + a + (b ? " (proposed: " + b + ")" : "") + (c || ""); }],
+    [/^(.*) \(TA propuso (.*)\)$/, "$1 (TA proposed $2)"],
+    [/^(.*?)[Ee]n el pool desde el (.*)$/, function(m, a, d){ return a + (a ? "in" : "In") + " the pool since " + d; }],
+    [/^TA recibió tu solicitud para (.*?): (.*)\. Te contactarán para confirmar la entrevista\.$/, "TA received your request for $1: $2. They'll contact you to confirm the interview."],
+    [/^(\d+) candidatos nuevos y (\d+) actualizados\.$/, "$1 new candidates and $2 updated."],
+    [/^(\d+) candidatos descargados\.$/, "$1 candidates downloaded."],
+    [/^Revisa este correo: (.*)$/, "Check this email: $1"],
+    [/^Estaba: (.*)$/, function(m, e){ return "Was: " + (D[e] || e); }],
+    [/^· (?:Reclutador: (.*?)|(Sin reclutador asignado))(?: · Estaba: (.*))?$/, function(m, r, none, e){ return "· " + (none ? "No recruiter assigned" : "Recruiter: " + r) + (e ? " · Was: " + (D[e] || e) : ""); }],
+    [/^Revalidar en (\d+) días$/, "Revalidate in $1 days"],
+    [/^(.*) \((\d+) días\)$/, "$1 ($2 days)"],
+    [/^No hay candidatos por revalidar\. Los que cumplan (\d+) días en el mismo estado aparecerán aquí solos\.$/, "No candidates to revalidate. Those who reach $1 days in the same status will show up here automatically."],
+
+    [/^Ya existe un candidato con el CEIPAL Applicant ID (.*)$/, "A candidate with CEIPAL Applicant ID $1 already exists."],
+    [/^Ya existe un candidato con el número de documento (.*)$/, "A candidate with ID number $1 already exists."]
+  ];
+  function tr(s){
+    var t = s.trim(); if(!t) return null;
+    var out = null;
+    if(Object.prototype.hasOwnProperty.call(D, t)) out = D[t];
+    else for(var i = 0; i < R.length; i++){ if(R[i][1] !== null && R[i][0].test(t)){ out = t.replace(R[i][0], R[i][1]); break; } }
+    if(out === null || out === t) return null;
+    var lead = s.match(/^\s*/)[0], trail = s.match(/\s*$/)[0];
+    return lead + out + trail;
+  }
+  window.POOL_TR = function(s){ var r = tr(String(s)); return r === null ? s : r; };
+  var SKIP = {SCRIPT:1, STYLE:1, TEXTAREA:1};
+  var ATTRS = ["placeholder", "aria-label", "title"];
+  function doText(n){
+    var p = n.parentNode; if(!p || SKIP[p.nodeName] || p.closest && p.closest("[data-notr]")) return;
+    var r = tr(n.nodeValue); if(r === null) return;
+    if(p.nodeName === "OPTION" && !p.hasAttribute("value")) p.setAttribute("value", n.nodeValue.trim());
+    n.nodeValue = r;
+  }
+  function doEl(el){
+    if(el.closest && el.closest("[data-notr]")) return;
+    ATTRS.forEach(function(a){ if(el.hasAttribute && el.hasAttribute(a)){ var r = tr(el.getAttribute(a)); if(r !== null) el.setAttribute(a, r); } });
+  }
+  function walk(root){
+    if(root.nodeType === 3){ doText(root); return; }
+    if(root.nodeType !== 1 || SKIP[root.nodeName]) return;
+    doEl(root);
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT), n;
+    while((n = w.nextNode())){ if(n.nodeType === 3) doText(n); else doEl(n); }
+  }
+  walk(document.body);
+  new MutationObserver(function(ms){
+      ms.forEach(function(m){
+        if(m.type === "childList") m.addedNodes.forEach(walk);
+        else if(m.type === "characterData") doText(m.target);
+        else if(m.type === "attributes") doEl(m.target);
+      });
+      var dt = tr(document.title); if(dt !== null) document.title = dt;
+  }).observe(document.body, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:ATTRS});
+  var dt0 = tr(document.title); if(dt0 !== null) document.title = dt0;
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var ENDPOINT = String(window.POOL_ENDPOINT || "").trim();
+  var C = {eyebrow:"", title:"Pool de Supervisores", subtitle:"", emails:[]};
+  var OPT = {levels:["Jr","Specialist","Senior"], estados:["Disponible","En proceso","Revalidar","Contratado","Descartado"], modalidades:["Presencial","Híbrido","Remoto"], ingles:["B1","B2","C1","C2"]};
+  var PUB = null, ADM = null, TOKEN = null;
+  var current = null, editing = null, loaded = false;
+  var VISIBLE = ["Disponible","En proceso"];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var esc = function(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); };
+  var EN = window.POOL_LANG === "en";
+  var money = function(n){ return n ? "$" + Number(n).toLocaleString(EN ? "en-US" : "es-CO") : "—"; };
+  var initials = function(n){ return (n||"?").split(/\s+/).filter(Boolean).slice(0,2).map(function(w){ return w[0]; }).join("").toUpperCase(); };
+  var isAdmin = function(){ return !!ADM; };
+  var today = function(){ var d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
+  function loc(c){ return [c.ciudad, c.pais].filter(Boolean).join(", "); }
+  function fmtDate(iso){
+    if(!iso) return "—";
+    var p = String(iso).slice(0,10).split("-"), m = EN ? ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"] : ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    if(p.length < 3) return String(iso);
+    return EN ? m[Number(p[1])-1] + " " + Number(p[2]) + ", " + p[0] : Number(p[2]) + " " + m[Number(p[1])-1] + " " + p[0];
+  }
+  function daysIn(iso){ return iso ? Math.floor((Date.now() - Date.parse(String(iso).slice(0,10)+"T00:00:00")) / 864e5) : null; }
+  function lvClass(l){ return "pill lv-" + String(l||"").replace(/\s/g,""); }
+  function stClass(s){ return "pill st-" + String(s||"").replace(/\s/g,""); }
+  function avColors(l){ return l==="Jr" ? "background:var(--jr-soft);color:var(--jr)" : l==="Senior" ? "background:var(--sr-soft);color:var(--sr)" : "background:var(--sp-soft);color:var(--sp)"; }
+  function list(){ var d = ADM || PUB; return d ? d.candidates : []; }
+  function byId(id){ return list().filter(function(c){ return c.id === id; })[0]; }
+  function toast(msg, bad){
+    var n = document.createElement("div"); n.className = "toast"; n.setAttribute("role","status"); n.textContent = msg;
+    if(bad){ n.style.background = "var(--bad-soft)"; n.style.color = "var(--bad)"; }
+    document.body.appendChild(n); setTimeout(function(){ n.remove(); }, 4200);
+  }
+  function ssGet(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
+  function ssSet(k, v){ try { if(v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch(e){} }
+
+  // ---------- Conexión con la hoja (Apps Script)
+  function api(action, data){
+    if(!ENDPOINT) return Promise.reject({error:"Falta pegar la URL del Apps Script en config.js."});
+    var body = Object.assign({action:action, token:TOKEN}, data || {});
+    return fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body)})
+      .then(function(r){ return r.json(); }, function(){ throw {error:"No hay conexión con la hoja. Revisa tu internet e inténtalo de nuevo."}; })
+      .then(function(j){ if(!j || !j.ok) throw j || {error:"Respuesta vacía"}; return j; });
+  }
+  function errText(e){ return (e && e.error) || "Algo salió mal. Inténtalo de nuevo."; }
+  function adminCall(action, data){
+    $("saving").hidden = false; document.body.classList.add("busy");
+    return api(action, data).then(function(j){
+      ADM = j; C = j.config || C; applyHeader(); refreshFilters(); render(); return j;
+    }, function(e){
+      if(e && e.error === "auth"){ toast("Tu sesión TA expiró. Vuelve a entrar.", true); leaveAdmin(); }
+      throw e;
+    }).finally(function(){ $("saving").hidden = true; document.body.classList.remove("busy"); });
+  }
+
+  // ---------- Encabezado y tablero
+  function applyHeader(){
+    $("hEyebrow").textContent = C.eyebrow || ""; $("hEyebrow").hidden = !C.eyebrow;
+    $("hTitle").textContent = C.title || "Pool de Supervisores";
+    $("hSub").textContent = C.subtitle || "";
+    document.title = C.title || "Pool de Supervisores";
+  }
+  function renderStats(){
+    var d = ADM || PUB, S = (d && d.stats) || {total:"–", disponibles:"–", proceso:"–", contratados:"–"};
+    var st = function(n, label, color, cls){ return '<div class="stat'+(cls?' '+cls:'')+'"><b>'+n+'</b><span>'+(color?'<i style="background:'+color+'"></i>':'')+label+'</span></div>'; };
+    $("stats").innerHTML = st(S.total, "Total en el pool", "", "total") + st(S.disponibles, "Disponibles", "#6FCF8E") + st(S.proceso, "En proceso", "#F2B34B") + st(S.contratados, "Contratados", "#8FB0FF");
+  }
+
+  // ---------- Filtros
+  function fillSelect(sel, opts, keepFirst){
+    var first = keepFirst ? sel.options[0].outerHTML : "";
+    sel.innerHTML = first + opts.map(function(o){ return "<option>"+esc(o)+"</option>"; }).join("");
+  }
+  function uniq(arr){ var o = {}; arr.forEach(function(x){ if(x) o[x] = 1; }); return Object.keys(o).sort(function(a,b){ return a.localeCompare(b,"es"); }); }
+  function refreshFilters(){
+    var keep = { p:$("fPais").value, c:$("fCiudad").value, e:$("fEstado").value, r:$("fRec").value };
+    var est = isAdmin() ? [["","Todos los estados"]].concat(OPT.estados.map(function(x){ return [x,x]; }))
+                        : [["","Disponibles y en proceso"],["Disponible","Disponibles"],["En proceso","En proceso"],["Contratado","Contratados"]];
+    $("fEstado").innerHTML = est.map(function(o){ return '<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>'; }).join("");
+    $("fEstado").value = est.some(function(o){ return o[0] === keep.e; }) ? keep.e : "";
+    fillSelect($("fRec"), uniq(list().map(function(c){ return c.reclutador; })), true);
+    $("fRec").value = keep.r;
+    var pool = list();
+    fillSelect($("fPais"), uniq(pool.map(function(c){ return c.pais; })), true);
+    $("fPais").value = keep.p;
+    fillSelect($("fCiudad"), uniq(pool.filter(function(c){ return !$("fPais").value || c.pais === $("fPais").value; }).map(function(c){ return c.ciudad; })), true);
+    $("fCiudad").value = keep.c;
+  }
+  function filtered(){
+    var q = $("q").value.trim().toLowerCase(), pa = $("fPais").value, ci = $("fCiudad").value, es = $("fEstado").value, rc = $("fRec").value;
+    var ORDER = ["Disponible","En proceso","Revalidar","Contratado","Descartado"];
+    return list().filter(function(c){
+      if(es){ if(c.estado !== es) return false; }
+      else if(!isAdmin() && VISIBLE.indexOf(c.estado) < 0) return false;
+      if(isAdmin() && rc && c.reclutador !== rc) return false;
+      if(pa && c.pais !== pa) return false;
+      if(ci && c.ciudad !== ci) return false;
+      if(q && [c.nombre,c.ciudad,c.pais,c.resumen,c.ceipal,c.cedula].join(" ").toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    }).sort(function(a,b){
+      var sa = ORDER.indexOf(a.estado), sb = ORDER.indexOf(b.estado);
+      sa = sa < 0 ? 9 : sa; sb = sb < 0 ? 9 : sb;
+      if(a.estado === "Contratado" && b.estado === "Contratado") return String(b.fechaContratacion||"").localeCompare(String(a.fechaContratacion||""));
+      return sa - sb || String(b.ingreso||"").localeCompare(String(a.ingreso||""));
+    });
+  }
+
+  // ---------- Fichas
+  function render(){
+    renderStats(); updRevalBadge();
+    if(!loaded){ $("count").textContent = ""; return; }
+    var items = filtered();
+    $("count").textContent = items.length === 1 ? "1 candidato" : items.length + " candidatos";
+    $("updated").textContent = "";
+    if(!items.length){
+      var empty = list().length ? "Ningún candidato coincide con estos filtros." :
+        (isAdmin() ? "Aún no hay candidatos. Usa “+ Agregar candidato”, “Cargar Excel” o escríbelos directo en la hoja." : "Pronto verás aquí los candidatos disponibles.");
+      $("grid").innerHTML = '<div class="empty" style="grid-column:1/-1">'+empty+'</div>';
+      return;
+    }
+    $("grid").innerHTML = items.map(function(c){
+      var dd = daysIn(c.ingreso), np = (c.presentaciones||[]).length;
+      return '<article class="card">' +
+        '<div class="top"><div class="av" style="'+avColors(c.nivel)+'">'+esc(initials(c.nombre))+'</div>' +
+        '<div style="min-width:0"><p class="name" data-notr>'+esc(c.nombre)+'</p><p class="sub">'+esc(loc(c))+'</p></div></div>' +
+        '<div class="pills"><span class="'+lvClass(c.nivel)+'">'+esc(c.nivel||"Sin nivel")+'</span><span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' +
+        (isAdmin() ? revalPill(c) : '') +
+        (isAdmin() && np ? '<span class="pill" style="background:var(--bg);color:var(--muted)">Presentado '+np+'×</span>' : '') +
+        (isAdmin() && c.estado === "Contratado" && (c.nivelContratado || c.fechaContratacion) ? '<span class="pill st-Contratado" style="white-space:normal">Seniority final: '+esc(c.nivelContratado||c.nivel||"—")+(c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? ' (propuesto: '+esc(c.nivel)+')' : '')+(c.fechaContratacion?' · '+fmtDate(c.fechaContratacion):'')+'</span>' : '') + '</div>' +
+        (isAdmin() ? '<div class="rec-tag'+(c.reclutador?'':' none')+'">'+(c.reclutador ? 'Reclutador: <b>'+esc(c.reclutador)+'</b>' : 'Sin reclutador asignado')+'</div>' +
+          '<div class="ids">'+(c.ceipal ? 'CEIPAL <b>'+esc(c.ceipal)+'</b>' : '<span class="miss">Sin CEIPAL ID</span>')+' · '+(c.cedula ? 'Doc. <b>'+esc(c.cedula)+'</b>' : '<span class="miss">Sin documento</span>')+'</div>' : '') +
+        '<dl class="facts"><div><dt>Inglés</dt><dd>'+esc(c.ingles||"—")+'</dd></div><div><dt>Disponibilidad</dt><dd>'+esc(c.disponibilidad||"—")+'</dd></div>' +
+        '<div><dt>Expectativa total</dt><dd>'+money(c.expectativa)+'</dd></div><div><dt>Modalidad</dt><dd>'+esc(c.modalidad||"—")+'</dd></div></dl>' +
+        '<p class="summary" data-notr>'+esc(c.resumen||"")+'</p>' +
+        '<div class="actions"><button class="btn" type="button" data-view="'+esc(c.id)+'">Ver perfil</button>' +
+        (isAdmin() ? '<button class="btn" type="button" data-edit="'+esc(c.id)+'">Editar</button>'
+                   : (VISIBLE.indexOf(c.estado) >= 0 ? '<button class="btn primary" type="button" data-sched="'+esc(c.id)+'">Agendar</button>' : '')) +
+        '</div></article>';
+    }).join("");
+  }
+
+  // ---------- Perfil
+  function safeUrl(u){ return /^https?:\/\//i.test(String(u||"")) ? u : ""; }
+  function openDetail(c){
+    if(!c) return; current = c;
+    $("dAv").textContent = initials(c.nombre); $("dAv").setAttribute("style", avColors(c.nivel));
+    $("dName").textContent = c.nombre;
+    $("dSub").textContent = (isAdmin() ? ["CEIPAL " + (c.ceipal || "—"), "Doc. " + (c.cedula || "—")].join(" · ") + " · e" : "E") + "n el pool desde el " + fmtDate(c.ingreso);
+    $("dPills").innerHTML = '<span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>';
+    $("dFacts").innerHTML = [
+      ["Ubicación", (loc(c)||"—") + (c.modalidad ? " · " + c.modalidad : "")],
+      ["Disponibilidad", c.disponibilidad||"—"],
+      ["Inglés (prueba)", c.ingles||"—"],
+      ["Expectativa total", money(c.expectativa)]
+    ].concat(isAdmin() ? [["Reclutador", c.reclutador || "Sin asignar"], ["En este estado desde", fmtDate(baseEstado(c)) + (daysIn(baseEstado(c)) !== null ? " (" + daysIn(baseEstado(c)) + " días)" : "")]] : [])
+     .concat(isAdmin() ? [["Fecha de contratación", c.fechaContratacion ? fmtDate(c.fechaContratacion) : "—"], ["Seniority final", (c.nivelContratado || "—") + (c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? " (TA propuso " + c.nivel + ")" : "")]] : [])
+     .map(function(r){ return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>'; }).join("");
+    $("dLevel").innerHTML = '<span class="'+lvClass(c.nivel)+'" style="font-size:14px">'+esc(c.nivel||"Sin nivel")+'</span>';
+    $("dWhy").textContent = c.why || ""; $("dWhy").hidden = !c.why;
+    $("dSummary").textContent = c.resumen || "Sin resumen todavía.";
+    var doc = function(label, url, btn){
+      url = safeUrl(url);
+      return url ? '<div class="doc"><span class="lbl">'+label+'</span><a href="'+esc(url)+'" target="_blank" rel="noopener">'+btn+'</a></div>'
+                 : '<div class="doc empty-doc"><span class="lbl">'+label+'</span><span class="none">Sin link todavía</span></div>';
+    };
+    $("dLinks").innerHTML = doc("Hoja de vida", c.cv, "Ver CV");
+    $("dSchedule").hidden = VISIBLE.indexOf(c.estado) < 0;
+    if(isAdmin()){
+      renderPres(c); $("pErr").textContent = ""; $("pFecha").value = today();
+      fillSelect($("pNivContr"), [""].concat(OPT.levels)); $("pNivContr").value = ""; $("pFContr").value = "";
+    }
+    if(!$("dlgDetail").open) $("dlgDetail").showModal();
+  }
+
+  // ---------- Agendar (solo supervisores): el correo llega solo a TA
+  function openSched(c){
+    if(!c) return; current = c;
+    $("sSub").textContent = c.nombre + " · " + (c.nivel||"");
+    $("sForm").hidden = false; $("sDone").hidden = true;
+    $("sFootForm").style.display = "contents"; $("sFootDone").style.display = "none";
+    $("sErr").textContent = ""; $("sSend").disabled = false; $("sSend").textContent = "Enviar solicitud";
+    try { var me = JSON.parse(localStorage.getItem("pool-hm") || "{}"); ["sHm","sMail","sRole"].forEach(function(k){ if(me[k] && !$(k).value) $(k).value = me[k]; }); } catch(e){}
+    $("sDate").min = today();
+    if($("dlgDetail").open) $("dlgDetail").close();
+    $("dlgSched").showModal();
+  }
+  function longDate(iso){ return new Date(iso+"T12:00:00").toLocaleDateString("es-CO",{weekday:"long",day:"numeric",month:"long"}); }
+  function hour12(t){ var p = t.split(":"), h = Number(p[0]); return (h%12||12) + ":" + p[1] + " " + (h<12 ? "a. m." : "p. m."); }
+  $("fSched").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var c = current, hm = $("sHm").value.trim(), mail = $("sMail").value.trim();
+    var need = [["sHm","Escribe tu nombre."],["sDate","Elige una fecha."],["sTime","Elige una hora."]];
+    for(var i=0;i<need.length;i++){ if(!$(need[i][0]).value.trim()){ $("sErr").textContent = need[i][1]; $(need[i][0]).focus(); return; } }
+    if(mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){ $("sErr").textContent = "Revisa tu correo."; $("sMail").focus(); return; }
+    $("sErr").textContent = "";
+    try { localStorage.setItem("pool-hm", JSON.stringify({sHm:hm, sMail:mail, sRole:$("sRole").value.trim()})); } catch(e){}
+    var when = longDate($("sDate").value) + ", " + hour12($("sTime").value) + " (hora Colombia)";
+    var whenShow = EN ? new Date($("sDate").value+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}) + ", " + (function(t){ var p = t.split(":"), h = Number(p[0]); return (h%12||12) + ":" + p[1] + (h<12 ? " AM" : " PM"); })($("sTime").value) + " (Colombia time)" : when;
+    $("sSend").disabled = true; $("sSend").textContent = "Enviando…";
+    api("request", {data:{id:c.id, solicitante:hm, correo:mail, cargo:$("sRole").value.trim(), fecha:$("sDate").value, hora:$("sTime").value,
+      cuando:when, alterna:$("sAlt").value.trim(), modalidad:$("sMode").value, comentarios:$("sNotes").value.trim()}})
+    .then(function(){
+      $("sDoneTitle").textContent = "Solicitud enviada";
+      $("sDoneText").textContent = "TA recibió tu solicitud para " + c.nombre + ": " + whenShow + ". Te contactarán para confirmar la entrevista.";
+      $("sForm").hidden = true; $("sDone").hidden = false;
+      $("sFootForm").style.display = "none"; $("sFootDone").style.display = "contents";
+      $("sAlt").value = ""; $("sNotes").value = "";
+    }, function(e){
+      $("sSend").disabled = false; $("sSend").textContent = "Enviar solicitud";
+      $("sErr").textContent = errText(e);
+    });
+  });
+
+  // ---------- Acceso TA
+  var setupMode = false;
+  function showLogin(setup){
+    setupMode = !!setup;
+    $("lTitle").textContent = setup ? "Crear contraseña TA" : "Acceso TA";
+    $("lHelp").textContent = setup ? "Es la primera vez. Crea la contraseña del modo TA y compártela solo con tu equipo." : "Solo para el equipo de Talent Acquisition.";
+    $("lConfWrap").hidden = !setup; $("lBtn").textContent = setup ? "Crear y entrar" : "Entrar";
+    $("lConf").value = ""; $("lErr").textContent = "";
+    if(!$("dlgLogin").open){ $("lPass").value = ""; $("dlgLogin").showModal(); }
+    $("lPass").focus();
+  }
+  $("btnAdmin").addEventListener("click", function(){ showLogin(false); });
+  $("fLogin").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var pass = $("lPass").value;
+    if(!pass){ $("lErr").textContent = "Escribe la contraseña."; return; }
+    if(setupMode){
+      if(pass.length < 6){ $("lErr").textContent = "Usa al menos 6 caracteres."; return; }
+      if(pass !== $("lConf").value){ $("lErr").textContent = "Las contraseñas no coinciden."; return; }
+    }
+    $("lBtn").disabled = true; $("lErr").textContent = "";
+    api("login", {pass:pass, setup:setupMode}).then(function(j){
+      TOKEN = j.token; ssSet("pool-token", TOKEN);
+      $("dlgLogin").close(); enterAdmin(j);
+    }, function(e){
+      if(e && e.error === "needs_setup") showLogin(true);
+      else $("lErr").textContent = errText(e);
+    }).finally(function(){ $("lBtn").disabled = false; });
+  });
+  function enterAdmin(j){
+    ADM = j; C = j.config || C; loaded = true;
+    document.body.classList.add("admin"); applyHeader(); refreshFilters(); render(); window.scrollTo(0,0);
+  }
+  function leaveAdmin(){
+    ADM = null; TOKEN = null; ssSet("pool-token", null);
+    document.body.classList.remove("admin"); $("fEstado").value = ""; $("fRec").value = "";
+    document.querySelectorAll("dialog[open]").forEach(function(d){ d.close(); });
+    loadPublic();
+  }
+  $("btnExit").addEventListener("click", function(){ if(TOKEN) api("logout").catch(function(){}); leaveAdmin(); });
+
+  // ---------- Presentaciones y feedback (solo TA)
+  function renderPres(c){
+    var items = (c.presentaciones||[]).slice().sort(function(a,b){ return String(b.fecha||"").localeCompare(String(a.fecha||"")); });
+    $("dPres").innerHTML = items.length ? items.map(function(p){
+      return '<div class="pres-item"><div class="ph"><b data-notr>'+esc(p.posicion)+'</b><span class="pill r-'+esc(String(p.resultado).replace(/\s/g,""))+'">'+esc(p.resultado)+'</span></div>' +
+        '<div class="muted" style="font-size:13px">'+fmtDate(p.fecha)+(p.cuenta?' · '+esc(p.cuenta):'')+'</div>' +
+        (p.feedback ? '<p data-notr>'+esc(p.feedback)+'</p>' : '') +
+        '<div class="pres-acts"><button class="linkbtn" type="button" data-editpres="'+esc(p.pid)+'">Editar</button><button class="linkbtn" type="button" data-delpres="'+esc(p.pid)+'">Eliminar</button></div></div>';
+    }).join("") : '<p class="muted" style="margin:0;font-size:14px">Todavía no ha sido presentado a ninguna posición.</p>';
+  }
+  var RESULTADOS = ["Pendiente feedback","Avanza","No seleccionado","Contratado"];
+  function presEditForm(p, c){
+    var opt = function(list, v){ return list.map(function(o){ return '<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>'; }).join(""); };
+    var hired = p.resultado === "Contratado";
+    return '<div class="pres-item editing" data-pid="'+esc(p.pid)+'">' +
+      '<div class="row"><label>Posición o vacante<input class="ep-pos" value="'+esc(p.posicion)+'"></label><label>Cuenta / hiring manager<input class="ep-cuenta" value="'+esc(p.cuenta||"")+'"></label></div>' +
+      '<div class="row"><label>Fecha de presentación<input class="ep-fecha" type="date" value="'+esc(String(p.fecha||"").slice(0,10))+'"></label><label>Resultado<select class="ep-res">'+opt(RESULTADOS, p.resultado)+'</select></label></div>' +
+      '<div class="row ep-hire"><label>Fecha de contratación <small>(si quedó contratado)</small><input class="ep-fcontr" type="date" value="'+esc(String(hired ? (c.fechaContratacion||"") : "").slice(0,10))+'"></label><label>Seniority final <small>(con el que quedó contratado)</small><select class="ep-niv">'+opt([""].concat(OPT.levels), hired ? (c.nivelContratado||"") : "")+'</select></label></div>' +
+      '<label>Feedback<textarea class="ep-fb" rows="2">'+esc(p.feedback||"")+'</textarea></label>' +
+      '<div class="err ep-err" role="alert"></div>' +
+      '<div class="pres-acts"><button class="btn small primary" type="button" data-savepres="'+esc(p.pid)+'">Guardar cambios</button><button class="btn small" type="button" data-cancelpres="1">Cancelar</button></div></div>';
+  }
+  $("pAdd").addEventListener("click", function(){
+    var c = current; if(!c || !isAdmin()) return;
+    var pos = $("pPos").value.trim();
+    if(!pos){ $("pErr").textContent = "Escribe la posición o vacante."; $("pPos").focus(); return; }
+    $("pErr").textContent = ""; $("pAdd").disabled = true;
+    var hired = $("pRes").value === "Contratado";
+    adminCall("addPres", {pres:{cid:c.id, posicion:pos, cuenta:$("pCuenta").value.trim(), fecha:$("pFecha").value, resultado:$("pRes").value, feedback:$("pFb").value.trim(),
+      fechaContratacion: hired ? $("pFContr").value : "", nivelContratado: hired ? $("pNivContr").value : ""}})
+      .then(function(){
+        $("pPos").value = ""; $("pCuenta").value = ""; $("pFb").value = ""; $("pRes").value = "Pendiente feedback"; $("pFContr").value = ""; $("pNivContr").value = "";
+        openDetail(byId(c.id));
+      }, function(e){ $("pErr").textContent = errText(e); })
+      .finally(function(){ $("pAdd").disabled = false; });
+  });
+  $("dPres").addEventListener("change", function(e){
+    if(e.target.classList.contains("ep-fcontr") || e.target.classList.contains("ep-niv")){
+      var bx = e.target.closest(".pres-item"), rs = bx.querySelector(".ep-res");
+      if(e.target.value && rs.value !== "Contratado"){ rs.value = "Contratado"; rs.dispatchEvent(new Event("change", {bubbles:true})); }
+      return;
+    }
+    if(!e.target.classList.contains("ep-res")) return;
+    var box = e.target.closest(".pres-item"); if(e.target.value === "Contratado"){ var f = box.querySelector(".ep-fcontr"), n = box.querySelector(".ep-niv"); if(!f.value) f.value = today(); if(!n.value && current) n.value = current.nivel || ""; }
+  });
+  $("dPres").addEventListener("click", function(e){
+    if(!current) return;
+    var ed = e.target.closest("[data-editpres]");
+    if(ed){
+      var p = (current.presentaciones||[]).filter(function(x){ return x.pid === ed.dataset.editpres; })[0]; if(!p) return;
+      var item = ed.closest(".pres-item"); item.outerHTML = presEditForm(p, current);
+      var box = $("dPres").querySelector('.pres-item.editing[data-pid="'+CSS.escape(p.pid)+'"]'); if(box) box.querySelector(".ep-res").focus();
+      return;
+    }
+    if(e.target.closest("[data-cancelpres]")){ renderPres(current); return; }
+    var sv = e.target.closest("[data-savepres]");
+    if(sv){
+      var box2 = sv.closest(".pres-item"), q = function(cl){ return box2.querySelector(cl); };
+      var pos = q(".ep-pos").value.trim();
+      if(!pos){ q(".ep-err").textContent = "Escribe la posición o vacante."; q(".ep-pos").focus(); return; }
+      var res = q(".ep-res").value, hired = res === "Contratado", cid0 = current.id;
+      sv.disabled = true;
+      adminCall("updatePres", {pres:{pid:sv.dataset.savepres, posicion:pos, cuenta:q(".ep-cuenta").value.trim(), fecha:q(".ep-fecha").value, resultado:res, feedback:q(".ep-fb").value.trim(),
+        fechaContratacion: hired ? q(".ep-fcontr").value : "", nivelContratado: hired ? q(".ep-niv").value : ""}})
+        .then(function(){ openDetail(byId(cid0)); toast("Presentación actualizada."); }, function(e3){ q(".ep-err").textContent = errText(e3); sv.disabled = false; });
+      return;
+    }
+    var b = e.target.closest("[data-delpres]"); if(!b) return;
+    if(b.dataset.confirm !== "1"){ b.dataset.confirm = "1"; b.textContent = "¿Seguro? Clic otra vez"; return; }
+    var cid = current.id;
+    adminCall("deletePres", {pid:b.dataset.delpres}).then(function(){ openDetail(byId(cid)); }, function(e2){ toast(errText(e2), true); });
+  });
+
+  // ---------- Agregar / editar candidatos
+  function openEdit(c){
+    fillSelect($("eEstado"), OPT.estados); fillSelect($("eModalidad"), OPT.modalidades);
+    fillSelect($("eIngles"), OPT.ingles); fillSelect($("eNivel"), OPT.levels); fillSelect($("eNivContr"), [""].concat(OPT.levels));
+    $("recList").innerHTML = uniq(list().map(function(r){ return r.reclutador; })).map(function(r){ return '<option value="'+esc(r)+'">'; }).join("");
+    editing = c || null;
+    var lastRec = ""; try { lastRec = localStorage.getItem("pool-rec") || ""; } catch(e){}
+    var x = c || {id:"", estado:"Disponible", ingreso:today(), pais:"Colombia", modalidad:"Híbrido", ingles:"B2", nivel:"Jr", reclutador:lastRec};
+    $("eTitle").textContent = c ? "Editar candidato" : "Agregar candidato";
+    var map = {eNombre:"nombre", eCeipal:"ceipal", eCedula:"cedula", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eWhy:"why", eCv:"cv", eRec:"reclutador", eFContr:"fechaContratacion", eNivContr:"nivelContratado"};
+    Object.keys(map).forEach(function(k){
+      var v = x[map[k]] == null ? "" : String(x[map[k]]);
+      var el = $(k);
+      if(el.tagName === "SELECT" && v && !Array.prototype.some.call(el.options, function(o){ return o.value === v; })) el.insertAdjacentHTML("beforeend", "<option>"+esc(v)+"</option>");
+      el.value = v;
+    });
+    toggleHire();
+    $("eErr").textContent = ""; $("eDelete").hidden = !c; $("eDelete").textContent = "Eliminar"; $("eDelete").dataset.confirm = "";
+    if($("dlgDetail").open) $("dlgDetail").close();
+    $("dlgEdit").showModal();
+  }
+  function toggleHire(){
+    var on = $("eEstado").value === "Contratado";
+    if(on){ if(!$("eFContr").value) $("eFContr").value = today(); if(!$("eNivContr").value) $("eNivContr").value = $("eNivel").value; }
+  }
+  $("eEstado").addEventListener("change", toggleHire);
+  $("pRes").addEventListener("change", function(){ if($("pRes").value === "Contratado" && current){ if(!$("pFContr").value) $("pFContr").value = today(); if(!$("pNivContr").value) $("pNivContr").value = current.nivel || ""; } });
+  // Si llenan la fecha o el seniority final, el candidato pasa a Contratado
+  ["eFContr","eNivContr"].forEach(function(id){ $(id).addEventListener("change", function(){ if($(id).value && $("eEstado").value !== "Contratado"){ $("eEstado").value = "Contratado"; toggleHire(); } }); });
+  ["pFContr","pNivContr"].forEach(function(id){ $(id).addEventListener("change", function(){ if($(id).value && $("pRes").value !== "Contratado"){ $("pRes").value = "Contratado"; if(!$("pFContr").value) $("pFContr").value = today(); if(!$("pNivContr").value && current) $("pNivContr").value = current.nivel || ""; } }); });
+  $("btnAdd").addEventListener("click", function(){ openEdit(null); });
+  $("dEdit").addEventListener("click", function(){ openEdit(current); });
+  $("fEdit").addEventListener("submit", function(e){
+    e.preventDefault();
+    var nombre = $("eNombre").value.trim();
+    if(!nombre){ $("eErr").textContent = "El nombre es obligatorio."; $("eNombre").focus(); return; }
+    var btn = e.submitter || $("fEdit").querySelector("[type=submit]"); btn.disabled = true;
+    var cand = {originalId: editing ? editing.id : "", ceipal:$("eCeipal").value.trim(), cedula:$("eCedula").value.replace(/[\s.,\-]/g,""), nombre:nombre, estado:$("eEstado").value, ingreso:$("eIngreso").value,
+      pais:$("ePais").value.trim(), ciudad:$("eCiudad").value.trim(), modalidad:$("eModalidad").value, disponibilidad:$("eDisp").value.trim(),
+      ingles:$("eIngles").value, expectativa:$("eExp").value, nivel:$("eNivel").value, resumen:$("eResumen").value.trim(), why:$("eWhy").value.trim(),
+      cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(),
+      fechaContratacion: $("eEstado").value === "Contratado" ? $("eFContr").value : "", nivelContratado: $("eEstado").value === "Contratado" ? $("eNivContr").value : ""};
+    try { if(cand.reclutador) localStorage.setItem("pool-rec", cand.reclutador); } catch(e3){}
+    adminCall("saveCandidate", {candidate:cand}).then(function(){ $("dlgEdit").close(); toast("Guardado."); }, function(e2){ $("eErr").textContent = errText(e2); })
+      .finally(function(){ btn.disabled = false; });
+  });
+  $("eDelete").addEventListener("click", function(){
+    var b = $("eDelete");
+    if(!b.dataset.confirm){ b.dataset.confirm = "1"; b.textContent = "¿Seguro? Clic otra vez"; return; }
+    adminCall("deleteCandidate", {id:editing.id}).then(function(){ $("dlgEdit").close(); toast("Candidato eliminado."); }, function(e2){ $("eErr").textContent = errText(e2); });
+  });
+
+
+  // ---------- Revalidación
+  function baseEstado(c){ return String(c.fechaEstado || c.ingreso || "").slice(0,10); }
+  function revDias(){ return Math.max(1, Number(C.revalidarDias) || 30); }
+  function revEstados(){ return String(C.revalidarEstados || "En proceso").split(",").map(function(x){ return x.trim(); }); }
+  function revalPill(c){
+    if(c.estado === "Revalidar") return c.estadoPrevio ? '<span class="pill" style="background:var(--bg);color:var(--muted)">Estaba: '+esc(c.estadoPrevio)+'</span>' : '';
+    if(revEstados().indexOf(c.estado) < 0) return '';
+    var d = daysIn(baseEstado(c)); if(d === null) return '';
+    var left = revDias() - d;
+    return left <= 5 ? '<span class="pill st-Revalidar">Revalidar en '+Math.max(0,left)+' días</span>' : '';
+  }
+  function porRevalidar(){ return list().filter(function(c){ return c.estado === "Revalidar"; }); }
+  function updRevalBadge(){
+    if(!$("revalN")) return; var n = isAdmin() ? porRevalidar().length : 0;
+    $("revalN").textContent = n; $("revalN").classList.toggle("on", n > 0);
+  }
+  function revalTexto(items){
+    var lines = items.map(function(c){
+      var d = daysIn(baseEstado(c));
+      return "• " + c.nombre + " — CEIPAL ID: " + (c.ceipal || "sin CEIPAL ID") + (c.reclutador ? " — Reclutador: " + c.reclutador : "") +
+        (c.estadoPrevio ? " — Estaba: " + c.estadoPrevio : "");
+    });
+    if(EN) return "Hi,\n\nThese candidates in the " + (C.title || "Pool de Supervisores") + " have been " + revDias() + " days or more in the same status and need to be revalidated:\n\n" +
+      items.map(function(c){ return "• " + c.nombre + " — CEIPAL ID: " + (c.ceipal || "no CEIPAL ID") + (c.reclutador ? " — Recruiter: " + c.reclutador : "") + (c.estadoPrevio ? " — Was: " + ({"En proceso":"In process","Disponible":"Available"}[c.estadoPrevio] || c.estadoPrevio) : ""); }).join("\n") +
+      "\n\nPlease confirm whether they're still interested and available.\n\nThanks.";
+    return "Hola,\n\nEstos candidatos del " + (C.title || "Pool de Supervisores") + " llevan " + revDias() + " días o más sin cambio de estado y hay que revalidarlos:\n\n" +
+      lines.join("\n") + "\n\nPor favor confirmar si siguen interesados y disponibles.\n\nGracias.";
+  }
+  function renderReval(keepMail){
+    var items = porRevalidar().sort(function(a,b){ return String(a.reclutador||"").localeCompare(String(b.reclutador||"")) || String(a.nombre).localeCompare(String(b.nombre)); });
+    $("rvSub").textContent = items.length === 1 ? "1 candidato" : items.length + " candidatos";
+    $("rvList").innerHTML = items.length ? items.map(function(c){
+      return '<div class="rv-item"><div><b data-notr>'+esc(c.nombre)+'</b><div class="muted">CEIPAL ID: <b>'+esc(c.ceipal || "—")+'</b> · '+(c.reclutador ? 'Reclutador: '+esc(c.reclutador) : 'Sin reclutador asignado')+(c.estadoPrevio ? ' · Estaba: '+esc(c.estadoPrevio) : '')+'</div></div>' +
+        '<div style="display:flex;gap:8px"><button class="btn small" type="button" data-rvview="'+esc(c.id)+'">Ver perfil</button><button class="btn small primary" type="button" data-rvok="'+esc(c.id)+'">Ya lo revalidé</button></div></div>';
+    }).join("") : '<p class="muted" style="margin:0">No hay candidatos por revalidar. Los que cumplan '+revDias()+' días en el mismo estado aparecerán aquí solos.</p>';
+    $("rvMailBox").hidden = !items.length; $("rvSend").hidden = $("rvCopy").hidden = $("rvOutlook").hidden = !items.length;
+    if(!keepMail){
+      $("rvTo").value = (C.emails||[]).join(", ");
+      $("rvSubj").value = (EN ? "Candidates to revalidate · " : "Candidatos por revalidar · ") + (C.title || "Pool de Supervisores");
+      $("rvBody").value = revalTexto(items); $("rvErr").textContent = "";
+    }
+  }
+  $("btnReval").addEventListener("click", function(){ renderReval(false); $("dlgReval").showModal(); });
+  $("rvList").addEventListener("click", function(e){
+    var v = e.target.closest("[data-rvview]"); if(v){ $("dlgReval").close(); openDetail(byId(v.dataset.rvview)); return; }
+    var b = e.target.closest("[data-rvok]"); if(!b) return;
+    b.disabled = true;
+    adminCall("revalidado", {id:b.dataset.rvok}).then(function(){ renderReval(false); toast("Listo, el conteo de días empieza de nuevo."); }, function(e2){ b.disabled = false; toast(errText(e2), true); });
+  });
+  $("rvSend").addEventListener("click", function(){
+    var to = $("rvTo").value.trim();
+    if(!to){ $("rvErr").textContent = "Escribe al menos un correo."; $("rvTo").focus(); return; }
+    $("rvErr").textContent = ""; $("rvSend").disabled = true;
+    api("revalEmail", {mail:{to:to, subject:$("rvSubj").value.trim(), body:$("rvBody").value}})
+      .then(function(){ toast("Correo enviado."); $("dlgReval").close(); }, function(e2){ $("rvErr").textContent = errText(e2); })
+      .finally(function(){ $("rvSend").disabled = false; });
+  });
+  $("rvCopy").addEventListener("click", function(){
+    var t = $("rvBody").value;
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ toast("Texto copiado."); }, function(){ $("rvBody").select(); document.execCommand("copy"); toast("Texto copiado."); });
+  });
+  $("rvOutlook").addEventListener("click", function(){
+    var u = "mailto:" + encodeURIComponent($("rvTo").value.replace(/\s+/g,"")).replace(/%2C/g, ",") + "?subject=" + encodeURIComponent($("rvSubj").value) + "&body=" + encodeURIComponent($("rvBody").value);
+    location.href = u;
+  });
+
+  // ---------- Configuración
+  $("btnSettings").addEventListener("click", function(){
+    $("cEyebrow").value = C.eyebrow || ""; $("cTitleIn").value = C.title || ""; $("cSub").value = C.subtitle || "";
+    $("cMails").value = (C.emails||[]).join(", ");
+    $("cRevDias").value = C.revalidarDias || 30; $("cRevEst").value = C.revalidarEstados === "Disponible,En proceso" ? "Disponible,En proceso" : "En proceso";
+    $("cRevMail").checked = C.revalidarCorreo !== "No";
+    $("cPass").value = ""; $("cPass2").value = ""; $("cErr").textContent = "";
+    $("dlgSettings").showModal();
+  });
+  $("fSettings").addEventListener("submit", function(e){
+    e.preventDefault();
+    var p1 = $("cPass").value, p2 = $("cPass2").value;
+    if(p1 || p2){
+      if(p1.length < 6){ $("cErr").textContent = "La nueva contraseña debe tener al menos 6 caracteres."; return; }
+      if(p1 !== p2){ $("cErr").textContent = "Las contraseñas no coinciden."; return; }
+    }
+    var emails = $("cMails").value.split(/[,;\s]+/).map(function(s){ return s.trim(); }).filter(Boolean);
+    var bad = emails.filter(function(m){ return !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m); });
+    if(bad.length){ $("cErr").textContent = "Revisa este correo: " + bad[0]; return; }
+    var btn = $("fSettings").querySelector("[type=submit]"); btn.disabled = true;
+    adminCall("saveConfig", {config:{eyebrow:$("cEyebrow").value.trim(), title:$("cTitleIn").value.trim() || "Pool de Supervisores", subtitle:$("cSub").value.trim(), emails:emails,
+      revalidarDias:String(Math.max(1, Math.round(Number($("cRevDias").value) || 30))), revalidarEstados:$("cRevEst").value, revalidarCorreo:$("cRevMail").checked ? "Sí" : "No"}})
+      .then(function(){ return p1 ? adminCall("changePass", {pass:p1}) : null; })
+      .then(function(){ $("dlgSettings").close(); toast(p1 ? "Configuración y contraseña guardadas." : "Configuración guardada."); }, function(e2){ $("cErr").textContent = errText(e2); })
+      .finally(function(){ btn.disabled = false; });
+  });
+
+  // ---------- Cargar Excel (.xlsx) o CSV
+  $("btnImport").addEventListener("click", function(){ $("xlsFile").click(); });
+  $("xlsFile").addEventListener("change", function(){
+    var file = this.files[0]; if(!file) return; this.value = "";
+    var isCsv = /\.csv$/i.test(file.name);
+    if(!isCsv && typeof XLSX === "undefined"){ toast("No se pudo cargar el lector de Excel. Guarda la hoja como CSV e intenta de nuevo.", true); return; }
+    var rd = new FileReader();
+    rd.onload = function(){
+      var rows;
+      try {
+        if(isCsv) rows = parseCSV(String(rd.result).replace(/^﻿/,""));
+        else {
+          var wb = XLSX.read(new Uint8Array(rd.result), {type:"array", cellDates:true});
+          var name = wb.SheetNames.filter(function(n){ return /candidatos|pool|bench/i.test(n); })[0] || wb.SheetNames[0];
+          rows = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, defval:"", raw:true});
+        }
+      } catch(err){ toast("No pude leer el archivo. Revisa que sea la plantilla de carga.", true); return; }
+      importRows(rows);
+    };
+    if(isCsv) rd.readAsText(file, "utf-8"); else rd.readAsArrayBuffer(file);
+  });
+  function norm(x){ return String(x==null?"":x).trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," "); }
+  function cellStr(v){ if(v instanceof Date) return new Date(v.getTime() - v.getTimezoneOffset()*6e4).toISOString().slice(0,10); return String(v==null?"":v).trim(); }
+  function toIso(s){
+    if(!s) return ""; if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+    var m = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/.exec(s);
+    if(m){ var y = m[3].length === 2 ? "20" + m[3] : m[3]; return y + "-" + m[2].padStart(2,"0") + "-" + m[1].padStart(2,"0"); }
+    return "";
+  }
+  function importRows(rows){
+    var keyCols = ["nombre","cedula","numero de documento","documento","ceipal applicant id","ceipal id"];
+    var hi = rows.findIndex(function(r){ return r.some(function(x){ return keyCols.indexOf(norm(x)) >= 0; }); });
+    if(hi < 0){ toast("No encontré las columnas Nombre, Número de documento o CEIPAL Applicant ID. Usa la plantilla de carga.", true); return; }
+    var h = rows[hi].map(norm);
+    var alias = {id:["id interno","id"], ceipal:["ceipal applicant id","ceipal id","applicant id","ceipal"], cedula:["numero de documento","documento","cedula","cc"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], reclutador:["reclutador","recruiter"], fechaContratacion:["fecha de contratacion"], nivelContratado:["seniority final","seniority contratado","nivel contratado"], fechaEstado:["fecha del estado"]};
+    var idx = {};
+    Object.keys(alias).forEach(function(k){ idx[k] = -1; alias[k].some(function(a){ var i = h.indexOf(norm(a)); if(i >= 0){ idx[k] = i; return true; } return false; }); });
+    var out = [];
+    rows.slice(hi+1).forEach(function(r){
+      var get = function(k){ return idx[k] >= 0 ? cellStr(r[idx[k]]) : ""; };
+      var nombre = get("nombre");
+      if(/^ejemplo/i.test(nombre) || (!nombre && !get("ceipal") && !get("cedula"))) return;
+      var rec = {}; Object.keys(alias).forEach(function(k){ if(idx[k] >= 0) rec[k] = get(k); });
+      if(rec.ingreso) rec.ingreso = toIso(rec.ingreso);
+      if(rec.fechaContratacion) rec.fechaContratacion = toIso(rec.fechaContratacion);
+      if(rec.fechaEstado) rec.fechaEstado = toIso(rec.fechaEstado);
+      out.push(rec);
+    });
+    if(!out.length){ toast("El archivo no trae candidatos para cargar.", true); return; }
+    adminCall("import", {rows:out}).then(function(j){
+      var r = j.importacion || {nuevos:0, actualizados:0};
+      toast(r.nuevos + " candidatos nuevos y " + r.actualizados + " actualizados.");
+    }, function(e){ toast(errText(e), true); });
+  }
+  // Descarga en Excel lo que se ve con los filtros actuales (para cruzar con CEIPAL en bulk)
+  $("btnExport").addEventListener("click", function(){
+    if(typeof XLSX === "undefined"){ toast("No se pudo cargar el generador de Excel. Recarga la página.", true); return; }
+    var items = filtered();
+    if(!items.length){ toast("No hay candidatos con estos filtros.", true); return; }
+    var rows = items.map(function(c){ return {
+      "CEIPAL Applicant ID": c.ceipal || "", "Número de documento": c.cedula || "", "Nombre": c.nombre || "",
+      "Estado": c.estado || "", "Reclutador": c.reclutador || "", "Nivel propuesto": c.nivel || "", "Seniority final": c.nivelContratado || "",
+      "Fecha de ingreso": c.ingreso || "", "Fecha del estado": c.fechaEstado || "", "Fecha de contratación": c.fechaContratacion || "", "País": c.pais || "", "Ciudad": c.ciudad || "",
+      "Modalidad": c.modalidad || "", "Disponibilidad": c.disponibilidad || "", "Inglés": c.ingles || "", "Expectativa total (COP)": Number(c.expectativa) || "",
+      "Resumen de experiencia": c.resumen || "", "Por qué este nivel": c.why || "", "Link CV": c.cv || "", "ID interno": c.id || ""
+    }; });
+    var ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = Object.keys(rows[0]).map(function(k){ return {wch: /Resumen|Por qué|Link/.test(k) ? 40 : Math.max(12, k.length + 2)}; });
+    var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Candidatos");
+    XLSX.writeFile(wb, "pool_supervisores_" + today() + ".xlsx");
+    toast(items.length + " candidatos descargados.");
+  });
+
+  function parseCSV(t){
+    var line = t.split("\n")[0], sep = line.split(";").length > line.split(",").length ? ";" : ",";
+    var rows = [], row = [], f = "", q = false;
+    for(var i=0;i<t.length;i++){
+      var ch = t[i];
+      if(q){ if(ch === '"'){ if(t[i+1] === '"'){ f += '"'; i++; } else q = false; } else f += ch; }
+      else if(ch === '"') q = true;
+      else if(ch === sep){ row.push(f); f = ""; }
+      else if(ch === "\n"){ row.push(f.replace(/\r$/,"")); rows.push(row); row = []; f = ""; }
+      else f += ch;
+    }
+    if(f || row.length){ row.push(f); rows.push(row); }
+    return rows;
+  }
+
+  // ---------- Carga inicial
+  function loadPublic(){
+    if(!ENDPOINT){
+      loaded = false; render();
+      $("grid").innerHTML = '<div class="empty" style="grid-column:1/-1">La página aún no está conectada a la hoja. Pega la URL del Apps Script en <b>config.js</b>.</div>';
+      return Promise.resolve();
+    }
+    $("grid").innerHTML = '<div class="empty" style="grid-column:1/-1">Cargando candidatos…</div>';
+    return fetch(ENDPOINT + "?action=public").then(function(r){ return r.json(); }).then(function(j){
+      if(!j.ok) throw j;
+      PUB = j; C = j.config || C; loaded = true; applyHeader(); refreshFilters(); render();
+    }).catch(function(e){
+      $("grid").innerHTML = '<div class="empty" style="grid-column:1/-1">No se pudieron cargar los candidatos. Recarga la página en un momento.</div>';
+    });
+  }
+
+  // ---------- Eventos generales
+  ["q","fCiudad","fEstado","fRec"].forEach(function(id){ $(id).addEventListener("input", render); });
+  $("fPais").addEventListener("input", function(){ $("fCiudad").value = ""; refreshFilters(); render(); });
+  $("grid").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    if(b.dataset.view) openDetail(byId(b.dataset.view));
+    if(b.dataset.sched) openSched(byId(b.dataset.sched));
+    if(b.dataset.edit) openEdit(byId(b.dataset.edit));
+  });
+  $("dSchedule").addEventListener("click", function(){ openSched(current); });
+  document.querySelectorAll("[data-close]").forEach(function(b){ b.addEventListener("click", function(){ b.closest("dialog").close(); }); });
+  document.querySelectorAll("dialog").forEach(function(d){ d.addEventListener("click", function(e){ if(e.target === d) d.close(); }); });
+
+  applyHeader(); render();
+  TOKEN = ssGet("pool-token");
+  if(TOKEN && ENDPOINT){
+    api("admin").then(enterAdmin, function(){ TOKEN = null; ssSet("pool-token", null); loadPublic(); });
+  } else loadPublic();
+})();
+</script>
+</body>
+</html>
+
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap">
 <style>
 /* Layout: encabezado con tablero + barra de filtros + grilla de fichas; perfil, agenda y admin en diálogos */
