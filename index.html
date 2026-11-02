@@ -231,7 +231,7 @@ body.admin .hm-only{display:none !important}
           <label>Fecha de presentación<input id="pFecha" type="date"></label>
           <label>Resultado<select id="pRes"><option>Pendiente feedback</option><option>Avanza</option><option>No seleccionado</option><option>Contratado</option></select></label>
         </div>
-        <div class="row" id="pHireRow" hidden><label>Fecha de contratación<input id="pFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="pNivContr"></select></label></div>
+        <div class="row" id="pHireRow"><label>Fecha de contratación <small>(si quedó contratado)</small><input id="pFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="pNivContr"></select></label></div>
         <label>Feedback<textarea id="pFb" rows="2" placeholder="Qué dijo el hiring manager"></textarea></label>
         <div class="err" id="pErr" role="alert"></div>
         <button class="btn small primary" type="button" id="pAdd">Agregar presentación</button>
@@ -297,7 +297,7 @@ body.admin .hm-only{display:none !important}
       <div class="row"><label>Inglés (prueba)<select id="eIngles"></select></label><label>Expectativa total (COP)<input id="eExp" type="number" min="0" step="50000"></label></div>
       <div class="row"><label>Nivel propuesto<select id="eNivel"></select></label><label>Reclutador<input id="eRec" list="recList" placeholder="Nombre del reclutador"></label></div>
       <datalist id="recList"></datalist>
-      <div class="row" id="eHireRow" hidden><label>Fecha de contratación<input id="eFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="eNivContr"></select></label></div>
+      <div class="row" id="eHireRow"><label>Fecha de contratación <small>(si quedó contratado)</small><input id="eFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="eNivContr"></select></label></div>
       <label>Resumen de experiencia (3–4 líneas)<textarea id="eResumen" rows="4"></textarea></label>
       <label>Por qué este nivel (una línea)<input id="eWhy"></label>
       <div class="row"><label>Link del CV<input id="eCv" type="url" placeholder="https://..."></label></div>
@@ -490,7 +490,7 @@ body.admin .hm-only{display:none !important}
       ["Inglés (prueba)", c.ingles||"—"],
       ["Expectativa total", money(c.expectativa)]
     ].concat(isAdmin() ? [["Reclutador", c.reclutador || "Sin asignar"]] : [])
-     .concat(isAdmin() && c.estado === "Contratado" ? [["Fecha de contratación", c.fechaContratacion ? fmtDate(c.fechaContratacion) : "—"], ["Seniority final", (c.nivelContratado || "—") + (c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? " (TA propuso " + c.nivel + ")" : "")]] : [])
+     .concat(isAdmin() ? [["Fecha de contratación", c.fechaContratacion ? fmtDate(c.fechaContratacion) : "—"], ["Seniority final", (c.nivelContratado || "—") + (c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? " (TA propuso " + c.nivel + ")" : "")]] : [])
      .map(function(r){ return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>'; }).join("");
     $("dLevel").innerHTML = '<span class="'+lvClass(c.nivel)+'" style="font-size:14px">'+esc(c.nivel||"Sin nivel")+'</span>';
     $("dWhy").textContent = c.why || ""; $("dWhy").hidden = !c.why;
@@ -504,8 +504,7 @@ body.admin .hm-only{display:none !important}
     $("dSchedule").hidden = VISIBLE.indexOf(c.estado) < 0;
     if(isAdmin()){
       renderPres(c); $("pErr").textContent = ""; $("pFecha").value = today();
-      fillSelect($("pNivContr"), OPT.levels); $("pNivContr").value = c.nivel || OPT.levels[0]; $("pFContr").value = today();
-      $("pHireRow").hidden = $("pRes").value !== "Contratado";
+      fillSelect($("pNivContr"), [""].concat(OPT.levels)); $("pNivContr").value = ""; $("pFContr").value = "";
     }
     if(!$("dlgDetail").open) $("dlgDetail").showModal();
   }
@@ -606,7 +605,7 @@ body.admin .hm-only{display:none !important}
     return '<div class="pres-item editing" data-pid="'+esc(p.pid)+'">' +
       '<div class="row"><label>Posición o vacante<input class="ep-pos" value="'+esc(p.posicion)+'"></label><label>Cuenta / hiring manager<input class="ep-cuenta" value="'+esc(p.cuenta||"")+'"></label></div>' +
       '<div class="row"><label>Fecha de presentación<input class="ep-fecha" type="date" value="'+esc(String(p.fecha||"").slice(0,10))+'"></label><label>Resultado<select class="ep-res">'+opt(RESULTADOS, p.resultado)+'</select></label></div>' +
-      '<div class="row ep-hire"'+(hired?'':' hidden')+'><label>Fecha de contratación<input class="ep-fcontr" type="date" value="'+esc(String(c.fechaContratacion||today()).slice(0,10))+'"></label><label>Seniority final <small>(con el que quedó contratado)</small><select class="ep-niv">'+opt(OPT.levels, c.nivelContratado||c.nivel||OPT.levels[0])+'</select></label></div>' +
+      '<div class="row ep-hire"><label>Fecha de contratación <small>(si quedó contratado)</small><input class="ep-fcontr" type="date" value="'+esc(String(hired ? (c.fechaContratacion||"") : "").slice(0,10))+'"></label><label>Seniority final <small>(con el que quedó contratado)</small><select class="ep-niv">'+opt([""].concat(OPT.levels), hired ? (c.nivelContratado||"") : "")+'</select></label></div>' +
       '<label>Feedback<textarea class="ep-fb" rows="2">'+esc(p.feedback||"")+'</textarea></label>' +
       '<div class="err ep-err" role="alert"></div>' +
       '<div class="pres-acts"><button class="btn small primary" type="button" data-savepres="'+esc(p.pid)+'">Guardar cambios</button><button class="btn small" type="button" data-cancelpres="1">Cancelar</button></div></div>';
@@ -620,14 +619,19 @@ body.admin .hm-only{display:none !important}
     adminCall("addPres", {pres:{cid:c.id, posicion:pos, cuenta:$("pCuenta").value.trim(), fecha:$("pFecha").value, resultado:$("pRes").value, feedback:$("pFb").value.trim(),
       fechaContratacion: hired ? $("pFContr").value : "", nivelContratado: hired ? $("pNivContr").value : ""}})
       .then(function(){
-        $("pPos").value = ""; $("pCuenta").value = ""; $("pFb").value = ""; $("pRes").value = "Pendiente feedback"; $("pHireRow").hidden = true;
+        $("pPos").value = ""; $("pCuenta").value = ""; $("pFb").value = ""; $("pRes").value = "Pendiente feedback"; $("pFContr").value = ""; $("pNivContr").value = "";
         openDetail(byId(c.id));
       }, function(e){ $("pErr").textContent = errText(e); })
       .finally(function(){ $("pAdd").disabled = false; });
   });
   $("dPres").addEventListener("change", function(e){
+    if(e.target.classList.contains("ep-fcontr") || e.target.classList.contains("ep-niv")){
+      var bx = e.target.closest(".pres-item"), rs = bx.querySelector(".ep-res");
+      if(e.target.value && rs.value !== "Contratado"){ rs.value = "Contratado"; rs.dispatchEvent(new Event("change", {bubbles:true})); }
+      return;
+    }
     if(!e.target.classList.contains("ep-res")) return;
-    var box = e.target.closest(".pres-item"); box.querySelector(".ep-hire").hidden = e.target.value !== "Contratado";
+    var box = e.target.closest(".pres-item"); if(e.target.value === "Contratado"){ var f = box.querySelector(".ep-fcontr"), n = box.querySelector(".ep-niv"); if(!f.value) f.value = today(); if(!n.value && current) n.value = current.nivel || ""; }
   });
   $("dPres").addEventListener("click", function(e){
     if(!current) return;
@@ -680,11 +684,13 @@ body.admin .hm-only{display:none !important}
   }
   function toggleHire(){
     var on = $("eEstado").value === "Contratado";
-    $("eHireRow").hidden = !on;
     if(on){ if(!$("eFContr").value) $("eFContr").value = today(); if(!$("eNivContr").value) $("eNivContr").value = $("eNivel").value; }
   }
   $("eEstado").addEventListener("change", toggleHire);
-  $("pRes").addEventListener("change", function(){ $("pHireRow").hidden = $("pRes").value !== "Contratado"; });
+  $("pRes").addEventListener("change", function(){ if($("pRes").value === "Contratado" && current){ if(!$("pFContr").value) $("pFContr").value = today(); if(!$("pNivContr").value) $("pNivContr").value = current.nivel || ""; } });
+  // Si llenan la fecha o el seniority final, el candidato pasa a Contratado
+  ["eFContr","eNivContr"].forEach(function(id){ $(id).addEventListener("change", function(){ if($(id).value && $("eEstado").value !== "Contratado"){ $("eEstado").value = "Contratado"; toggleHire(); } }); });
+  ["pFContr","pNivContr"].forEach(function(id){ $(id).addEventListener("change", function(){ if($(id).value && $("pRes").value !== "Contratado"){ $("pRes").value = "Contratado"; if(!$("pFContr").value) $("pFContr").value = today(); if(!$("pNivContr").value && current) $("pNivContr").value = current.nivel || ""; } }); });
   $("btnAdd").addEventListener("click", function(){ openEdit(null); });
   $("dEdit").addEventListener("click", function(){ openEdit(current); });
   $("fEdit").addEventListener("submit", function(e){
