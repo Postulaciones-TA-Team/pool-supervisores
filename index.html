@@ -39,8 +39,8 @@ header p{margin:0;color:#C9D3E3;max-width:60ch;white-space:pre-line}
 .stat i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
 .toolbar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
 .toolbar .wrap{padding-block:14px;display:flex;flex-wrap:wrap;gap:10px}
-.toolbar .wrap input{flex:2 1 260px}
-.toolbar .wrap select{flex:1 1 150px;width:auto}
+.toolbar .wrap input{flex:2 1 220px}
+.toolbar .wrap select{flex:1 1 130px;width:auto}
 .toolbar input,.toolbar select{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:0 12px}
 main .wrap{padding-block:22px 40px}
 .resultline{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;color:var(--muted);font-size:14px;gap:12px;flex-wrap:wrap}
@@ -54,6 +54,20 @@ main .wrap{padding-block:22px 40px}
 .card .name{font-size:15px}
 .sub{font-size:13px;color:var(--muted);margin:2px 0 0}
 .pills{display:flex;flex-wrap:wrap;gap:6px}
+:root{--gold:#B7791F;--gold-soft:#FFF4D6;--gold-line:#F0C24B}
+.card{position:relative}
+.card.is-top{border-color:var(--gold-line);box-shadow:0 0 0 1px var(--gold-line),0 6px 18px -10px rgba(183,121,31,.45)}
+.pill.toppill{background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold-line)}
+.star{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:#B8C0CC;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.star:hover{border-color:var(--gold-line);color:var(--gold)}
+.star.on{background:var(--gold-soft);border-color:var(--gold-line);color:#E0A100}
+.star:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body.admin .card .top{padding-right:36px}
+.ftop{flex:0 0 auto!important;width:auto!important;height:40px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:0 14px;font:600 14px var(--body);color:var(--ink);cursor:pointer;white-space:nowrap}
+.ftop[aria-pressed="true"]{background:var(--gold-soft);border-color:var(--gold-line);color:var(--gold)}
+.top-banner{background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--gold);border-radius:8px;padding:9px 12px;font-size:14px;font-weight:600;margin-top:10px}
+.chk-top{flex-direction:row!important;align-items:center;gap:10px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:8px;padding:10px 12px;color:var(--gold);font-weight:700}
+.chk-top input{width:18px;height:18px;margin:0;accent-color:#E0A100}
 .rec-tag{font-size:12.5px;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:4px 8px;align-self:flex-start}
 .rec-tag.none{color:var(--muted);background:var(--bg)}
 .ids{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -181,6 +195,7 @@ body.admin .hm-only{display:none !important}
     <select id="fPais" aria-label="País"><option value="">Todos los países</option></select>
     <select id="fCiudad" aria-label="Ciudad"><option value="">Todas las ciudades</option></select>
     <select id="fRec" class="admin-only" aria-label="Reclutador"><option value="">Todos los reclutadores</option></select>
+    <button id="fTop" class="ftop" type="button" aria-pressed="false">★ Destacados</button>
   </div>
 </div>
 
@@ -309,6 +324,7 @@ body.admin .hm-only{display:none !important}
       <div class="row"><label>Modalidad<select id="eModalidad"></select></label><label>Disponibilidad<input id="eDisp" placeholder="2 semanas"></label></div>
       <div class="row"><label>Inglés (prueba)<select id="eIngles"></select></label><label>Expectativa total (COP)<input id="eExp" type="number" min="0" step="50000"></label></div>
       <div class="row"><label>Nivel propuesto<select id="eNivel"></select></label><label>Reclutador<input id="eRec" list="recList" placeholder="Nombre del reclutador"></label></div>
+      <label class="chk-top"><input id="eTop" type="checkbox"> ★ Candidato destacado (TOP): priorizar con los coordinadores</label>
       <datalist id="recList"></datalist>
       <div class="row" id="eHireRow"><label>Fecha de contratación <small>(si quedó contratado)</small><input id="eFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="eNivContr"></select></label></div>
       <label>Resumen de experiencia (3–4 líneas)<textarea id="eResumen" rows="4"></textarea></label>
@@ -477,7 +493,11 @@ body.admin .hm-only{display:none !important}
     "Enviar correo automático cada mañana con los nuevos por revalidar":"Send an automatic email every morning with new candidates to revalidate",
     "Cuando un candidato cumple estos días en el mismo estado, pasa solo a":"When a candidate reaches this many days in the same status, it automatically moves to",
     "y deja de verse para los coordinadores. El correo automático llega a los correos de arriba.":"and is hidden from coordinators. The automatic email goes to the addresses above.",
-    "En este estado desde":"In this status since", "CEIPAL ID:":"CEIPAL ID:"
+    "En este estado desde":"In this status since", "★ Destacados":"★ Top picks", "★ TOP":"★ TOP",
+    "★ Candidato destacado: TA recomienda priorizarlo.":"★ Top pick: TA recommends prioritizing this candidate.",
+    "★ Candidato destacado (TOP): priorizar con los coordinadores":"★ Top pick: prioritize with coordinators",
+    "Quitar de destacados":"Remove from top picks", "Marcar como destacado":"Mark as top pick",
+    "★ Marcado como destacado.":"★ Marked as top pick.", "Ya no está destacado.":"No longer a top pick.", "CEIPAL ID:":"CEIPAL ID:"
   };
   // Textos que llevan números o nombres
   var R = [
@@ -570,6 +590,7 @@ body.admin .hm-only{display:none !important}
   function stClass(s){ return "pill st-" + String(s||"").replace(/\s/g,""); }
   function avColors(l){ return l==="Jr" ? "background:var(--jr-soft);color:var(--jr)" : l==="Senior" ? "background:var(--sr-soft);color:var(--sr)" : "background:var(--sp-soft);color:var(--sp)"; }
   function list(){ var d = ADM || PUB; return d ? d.candidates : []; }
+  function isTop(c){ return !!c && /^(s[ií]|x|top|yes|true|1|★)$/i.test(String(c.top == null ? "" : c.top).trim()); }
   function byId(id){ return list().filter(function(c){ return c.id === id; })[0]; }
   function toast(msg, bad){
     var n = document.createElement("div"); n.className = "toast"; n.setAttribute("role","status"); n.textContent = msg;
@@ -632,12 +653,13 @@ body.admin .hm-only{display:none !important}
     $("fCiudad").value = keep.c;
   }
   function filtered(){
-    var q = $("q").value.trim().toLowerCase(), pa = $("fPais").value, ci = $("fCiudad").value, es = $("fEstado").value, rc = $("fRec").value;
+    var q = $("q").value.trim().toLowerCase(), pa = $("fPais").value, ci = $("fCiudad").value, es = $("fEstado").value, rc = $("fRec").value, tp = $("fTop").getAttribute("aria-pressed") === "true";
     var ORDER = ["Disponible","En proceso","Revalidar","Contratado","Descartado"];
     return list().filter(function(c){
       if(es){ if(c.estado !== es) return false; }
       else if(!isAdmin() && VISIBLE.indexOf(c.estado) < 0) return false;
       if(isAdmin() && rc && c.reclutador !== rc) return false;
+      if(tp && !isTop(c)) return false;
       if(pa && c.pais !== pa) return false;
       if(ci && c.ciudad !== ci) return false;
       if(q && [c.nombre,c.ciudad,c.pais,c.resumen,c.ceipal,c.cedula].join(" ").toLowerCase().indexOf(q) < 0) return false;
@@ -645,6 +667,8 @@ body.admin .hm-only{display:none !important}
     }).sort(function(a,b){
       var sa = ORDER.indexOf(a.estado), sb = ORDER.indexOf(b.estado);
       sa = sa < 0 ? 9 : sa; sb = sb < 0 ? 9 : sb;
+      var ta = isTop(a) && VISIBLE.indexOf(a.estado) >= 0, tb = isTop(b) && VISIBLE.indexOf(b.estado) >= 0;
+      if(ta !== tb) return ta ? -1 : 1;
       if(a.estado === "Contratado" && b.estado === "Contratado") return String(b.fechaContratacion||"").localeCompare(String(a.fechaContratacion||""));
       return sa - sb || String(b.ingreso||"").localeCompare(String(a.ingreso||""));
     });
@@ -665,10 +689,12 @@ body.admin .hm-only{display:none !important}
     }
     $("grid").innerHTML = items.map(function(c){
       var dd = daysIn(c.ingreso), np = (c.presentaciones||[]).length;
-      return '<article class="card">' +
+      var top = isTop(c);
+      return '<article class="card'+(top ? ' is-top' : '')+'">' +
+        (isAdmin() ? '<button class="star'+(top ? ' on' : '')+'" type="button" data-top="'+esc(c.id)+'" aria-pressed="'+top+'" aria-label="'+(top ? 'Quitar de destacados' : 'Marcar como destacado')+'" title="'+(top ? 'Quitar de destacados' : 'Marcar como destacado')+'">'+(top ? '★' : '☆')+'</button>' : '') +
         '<div class="top"><div class="av" style="'+avColors(c.nivel)+'">'+esc(initials(c.nombre))+'</div>' +
         '<div style="min-width:0"><p class="name" data-notr>'+esc(c.nombre)+'</p><p class="sub">'+esc(loc(c))+'</p></div></div>' +
-        '<div class="pills"><span class="'+lvClass(c.nivel)+'">'+esc(c.nivel||"Sin nivel")+'</span><span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' +
+        '<div class="pills">'+(top ? '<span class="pill toppill">★ TOP</span>' : '')+'<span class="'+lvClass(c.nivel)+'">'+esc(c.nivel||"Sin nivel")+'</span><span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' +
         (isAdmin() ? revalPill(c) : '') +
         (isAdmin() && np ? '<span class="pill" style="background:var(--bg);color:var(--muted)">Presentado '+np+'×</span>' : '') +
         (isAdmin() && c.estado === "Contratado" && (c.nivelContratado || c.fechaContratacion) ? '<span class="pill st-Contratado" style="white-space:normal">Seniority final: '+esc(c.nivelContratado||c.nivel||"—")+(c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? ' (propuesto: '+esc(c.nivel)+')' : '')+(c.fechaContratacion?' · '+fmtDate(c.fechaContratacion):'')+'</span>' : '') + '</div>' +
@@ -691,7 +717,8 @@ body.admin .hm-only{display:none !important}
     $("dAv").textContent = initials(c.nombre); $("dAv").setAttribute("style", avColors(c.nivel));
     $("dName").textContent = c.nombre;
     $("dSub").textContent = (isAdmin() ? ["CEIPAL " + (c.ceipal || "—"), "Doc. " + (c.cedula || "—")].join(" · ") + " · e" : "E") + "n el pool desde el " + fmtDate(c.ingreso);
-    $("dPills").innerHTML = '<span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>';
+    $("dPills").innerHTML = (isTop(c) ? '<span class="pill toppill">★ TOP</span>' : '') + '<span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' +
+      (isTop(c) ? '<div class="top-banner" style="flex-basis:100%">★ Candidato destacado: TA recomienda priorizarlo.</div>' : '');
     $("dFacts").innerHTML = [
       ["Ubicación", (loc(c)||"—") + (c.modalidad ? " · " + c.modalidad : "")],
       ["Disponibilidad", c.disponibilidad||"—"],
@@ -886,6 +913,7 @@ body.admin .hm-only{display:none !important}
       if(el.tagName === "SELECT" && v && !Array.prototype.some.call(el.options, function(o){ return o.value === v; })) el.insertAdjacentHTML("beforeend", "<option>"+esc(v)+"</option>");
       el.value = v;
     });
+    $("eTop").checked = isTop(x);
     toggleHire();
     $("eErr").textContent = ""; $("eDelete").hidden = !c; $("eDelete").textContent = "Eliminar"; $("eDelete").dataset.confirm = "";
     if($("dlgDetail").open) $("dlgDetail").close();
@@ -910,7 +938,7 @@ body.admin .hm-only{display:none !important}
     var cand = {originalId: editing ? editing.id : "", ceipal:$("eCeipal").value.trim(), cedula:$("eCedula").value.replace(/[\s.,\-]/g,""), nombre:nombre, estado:$("eEstado").value, ingreso:$("eIngreso").value,
       pais:$("ePais").value.trim(), ciudad:$("eCiudad").value.trim(), modalidad:$("eModalidad").value, disponibilidad:$("eDisp").value.trim(),
       ingles:$("eIngles").value, expectativa:$("eExp").value, nivel:$("eNivel").value, resumen:$("eResumen").value.trim(), why:$("eWhy").value.trim(),
-      cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(),
+      cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(), top:$("eTop").checked ? "Sí" : "",
       fechaContratacion: $("eEstado").value === "Contratado" ? $("eFContr").value : "", nivelContratado: $("eEstado").value === "Contratado" ? $("eNivContr").value : ""};
     try { if(cand.reclutador) localStorage.setItem("pool-rec", cand.reclutador); } catch(e3){}
     adminCall("saveCandidate", {candidate:cand}).then(function(){ $("dlgEdit").close(); toast("Guardado."); }, function(e2){ $("eErr").textContent = errText(e2); })
@@ -1050,7 +1078,7 @@ body.admin .hm-only{display:none !important}
     var hi = rows.findIndex(function(r){ return r.some(function(x){ return keyCols.indexOf(norm(x)) >= 0; }); });
     if(hi < 0){ toast("No encontré las columnas Nombre, Número de documento o CEIPAL Applicant ID. Usa la plantilla de carga.", true); return; }
     var h = rows[hi].map(norm);
-    var alias = {id:["id interno","id"], ceipal:["ceipal applicant id","ceipal id","applicant id","ceipal"], cedula:["numero de documento","documento","cedula","cc"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], reclutador:["reclutador","recruiter"], fechaContratacion:["fecha de contratacion"], nivelContratado:["seniority final","seniority contratado","nivel contratado"], fechaEstado:["fecha del estado"]};
+    var alias = {id:["id interno","id"], ceipal:["ceipal applicant id","ceipal id","applicant id","ceipal"], cedula:["numero de documento","documento","cedula","cc"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], reclutador:["reclutador","recruiter"], fechaContratacion:["fecha de contratacion"], nivelContratado:["seniority final","seniority contratado","nivel contratado"], fechaEstado:["fecha del estado"], top:["destacado","top","prioridad"]};
     var idx = {};
     Object.keys(alias).forEach(function(k){ idx[k] = -1; alias[k].some(function(a){ var i = h.indexOf(norm(a)); if(i >= 0){ idx[k] = i; return true; } return false; }); });
     var out = [];
@@ -1077,7 +1105,7 @@ body.admin .hm-only{display:none !important}
     if(!items.length){ toast("No hay candidatos con estos filtros.", true); return; }
     var rows = items.map(function(c){ return {
       "CEIPAL Applicant ID": c.ceipal || "", "Número de documento": c.cedula || "", "Nombre": c.nombre || "",
-      "Estado": c.estado || "", "Reclutador": c.reclutador || "", "Nivel propuesto": c.nivel || "", "Seniority final": c.nivelContratado || "",
+      "Estado": c.estado || "", "Destacado": isTop(c) ? "Sí" : "", "Reclutador": c.reclutador || "", "Nivel propuesto": c.nivel || "", "Seniority final": c.nivelContratado || "",
       "Fecha de ingreso": c.ingreso || "", "Fecha del estado": c.fechaEstado || "", "Fecha de contratación": c.fechaContratacion || "", "País": c.pais || "", "Ciudad": c.ciudad || "",
       "Modalidad": c.modalidad || "", "Disponibilidad": c.disponibilidad || "", "Inglés": c.ingles || "", "Expectativa total (COP)": Number(c.expectativa) || "",
       "Resumen de experiencia": c.resumen || "", "Por qué este nivel": c.why || "", "Link CV": c.cv || "", "ID interno": c.id || ""
@@ -1122,9 +1150,15 @@ body.admin .hm-only{display:none !important}
 
   // ---------- Eventos generales
   ["q","fCiudad","fEstado","fRec"].forEach(function(id){ $(id).addEventListener("input", render); });
+  $("fTop").addEventListener("click", function(){ var on = $("fTop").getAttribute("aria-pressed") !== "true"; $("fTop").setAttribute("aria-pressed", on); render(); });
   $("fPais").addEventListener("input", function(){ $("fCiudad").value = ""; refreshFilters(); render(); });
   $("grid").addEventListener("click", function(e){
     var b = e.target.closest("button"); if(!b) return;
+    if(b.dataset.top){
+      var c = byId(b.dataset.top), on = !isTop(c); b.disabled = true;
+      adminCall("toggleTop", {id:c.id, top:on}).then(function(){ toast(on ? "★ Marcado como destacado." : "Ya no está destacado."); }, function(e2){ b.disabled = false; toast(errText(e2), true); });
+      return;
+    }
     if(b.dataset.view) openDetail(byId(b.dataset.view));
     if(b.dataset.sched) openSched(byId(b.dataset.sched));
     if(b.dataset.edit) openEdit(byId(b.dataset.edit));
