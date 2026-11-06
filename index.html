@@ -159,6 +159,50 @@ body.admin .hm-only{display:none !important}
 @media (max-width:820px){.toolbar .wrap input{flex-basis:100%} body.admin .toolbar{position:static}}
 @media (max-width:480px){.row,.facts,.docs{grid-template-columns:1fr} h1{font-size:25px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ===== Diseño: suave con acentos azules ===== */
+:root{--bg:#F6F6F3;--card:#fff;--line:#E7E5DF;--ink:#1C2430;--muted:#646B76;--accent:#1F4FD1;--accent-soft:#E9EFFD}
+body{background:var(--bg)}
+header{background:var(--bg);color:var(--ink)}
+header .wrap{padding-block:40px 22px;align-items:center}
+.eyebrow{color:var(--accent);letter-spacing:.16em}
+h1{font-size:36px;letter-spacing:-.03em;font-weight:800}
+header p{color:var(--muted)}
+.stat,.stat.total{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+.stat.total{background:var(--accent);border-color:var(--accent)}
+.stat.total b,.stat.total span{color:#fff}
+.stat b{color:var(--ink)} .stat span{color:var(--muted)}
+.lang{border-color:var(--line);color:#8A8F98} .lang b{color:var(--accent)}
+.lang:focus-visible{outline-color:var(--accent)}
+.toolbar{background:var(--bg);border-bottom:none}
+.toolbar .wrap{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:4px;max-width:calc(1180px - 32px)}
+.toolbar input,.toolbar select,.ftop{border:1px solid transparent;background:var(--bg);border-radius:10px}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--accent);background:#fff}
+.grid{gap:16px}
+.card{border-color:var(--line);border-radius:18px;padding:18px}
+.card:hover{border-color:#C9D5F5;box-shadow:0 10px 26px -16px rgba(31,79,209,.35)}
+.card .av,.av{background:var(--accent-soft)!important;color:var(--accent)!important}
+.pill{background:var(--bg);color:#4A515C;border:1px solid var(--line)}
+.lv-Jr,.lv-Specialist,.lv-Senior{background:var(--accent-soft);color:var(--accent);border-color:#D3DEFA}
+.st-Disponible{background:#EAF5EB;color:#2E7D32;border-color:#D3EBD5}
+.st-Enproceso{background:#FFF4E0;color:#9A5B00;border-color:#F6E2BC}
+.st-Contratado{background:var(--accent-soft);color:var(--accent);border-color:#D3DEFA}
+.st-Descartado,.st-Revalidar{background:#FCECEA;color:#B3261E;border-color:#F5D3CF}
+.pill.toppill{background:var(--gold-soft);color:var(--gold);border-color:var(--gold-line)}
+.facts dd{color:var(--ink)}
+.summary{-webkit-line-clamp:3}
+.btn{border-radius:999px}
+.card .btn{border-radius:999px}
+.btn.primary,a.btn.primary,.doc a{background:var(--accent);border-color:var(--accent)}
+.btn:not(.primary):hover{border-color:var(--accent);color:var(--accent)}
+.rec-tag{border-radius:999px;padding:3px 10px}
+dialog{border-radius:20px}
+.profile-box,.doc,.pres-item,.rv-item{border-radius:14px}
+label input,label select,label textarea{border-radius:10px}
+.empty{border-radius:18px}
+footer .wrap{border-top-color:var(--line)}
+#adminbar{background:var(--ink)}
+@media (max-width:820px){.toolbar .wrap{margin-inline:16px;max-width:none}}
+@media (max-width:480px){header .wrap{padding-block:28px 18px} h1{font-size:28px}}
 </style>
 </head>
 <body>
