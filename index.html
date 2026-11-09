@@ -159,6 +159,13 @@ body.admin .hm-only{display:none !important}
 @media (max-width:820px){.toolbar .wrap input{flex-basis:100%} body.admin .toolbar{position:static}}
 @media (max-width:480px){.row,.facts,.docs{grid-template-columns:1fr} h1{font-size:25px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.eval-tag{font-size:12.5px;color:#0B4A9E;background:#EAF2FF;border:1px solid #CFE0FB;border-radius:8px;padding:5px 9px;align-self:flex-start;line-height:1.35}
+.eval-banner{flex-basis:100%;background:#EAF2FF;border:1px solid #CFE0FB;color:#0B4A9E;border-radius:10px;padding:9px 12px;font-size:14px;margin-top:10px}
+.r-Nota{background:#F1ECFB;color:#5B3BA8}
+.ptag{display:inline-block;font-size:11.5px;font-weight:700;color:#0B4A9E;background:#EAF2FF;border-radius:6px;padding:1px 7px;margin-right:6px}
+.ptag.nota{color:#5B3BA8;background:#F1ECFB}
+.money{display:flex;gap:6px}.money select{width:96px;flex:none}.money input{flex:1;min-width:0}
+.assess-msg{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:15px;margin-bottom:12px}
 /* ===== Diseño: suave con acentos azules ===== */
 :root{--bg:#F6F6F3;--card:#fff;--line:#E7E5DF;--ink:#1C2430;--muted:#646B76;--accent:#1F4FD1;--accent-soft:#E9EFFD}
 body{background:var(--bg)}
@@ -313,6 +320,8 @@ footer .wrap{border-top-color:var(--line)}
   <div class="dlg-foot">
     <button class="btn" data-close type="button">Cerrar</button>
     <button class="btn admin-only" id="dEdit" type="button">Editar</button>
+    <button class="btn hm-only" id="dNote" type="button" style="margin-right:auto">✎ Dejar nota</button>
+    <button class="btn hm-only" id="dAssess" type="button">Solicitar assessment</button>
     <button class="btn primary hm-only" id="dSchedule" type="button">Quiero agendar entrevista</button>
   </div>
 </dialog>
@@ -356,6 +365,54 @@ footer .wrap{border-top-color:var(--line)}
   </form>
 </dialog>
 
+<!-- Assessment -->
+<dialog id="dlgAssess" aria-labelledby="aTitle">
+  <div class="dlg-head"><div><h2 id="aTitle">Solicitar assessment</h2><p class="sub" id="aSub"></p></div><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fAssess" novalidate>
+    <div class="dlg-body" id="aForm">
+      <div class="row">
+        <label>Tu nombre<input id="aHm" autocomplete="name"></label>
+        <label>Tu correo<input id="aMail" type="email" autocomplete="email" placeholder="nombre@empresa.com"></label>
+      </div>
+      <div class="row">
+        <label>Cargo o cuenta<input id="aRole" placeholder="Coordinador · Cuenta Healthcare"></label>
+        <label>Assessment<select id="aTipo"></select></label>
+      </div>
+      <div class="assess-msg" id="aMsg"></div>
+      <label>Comentarios <small>(opcional)</small><textarea id="aNotes" rows="2" placeholder="Para qué vacante o qué te gustaría validar"></textarea></label>
+      <div class="err" id="aErr" role="alert"></div>
+    </div>
+    <div class="dlg-body" id="aDone" hidden>
+      <div class="ok-box"><div class="big">✓</div><h2>Solicitud enviada</h2><p class="muted" id="aDoneText"></p></div>
+    </div>
+    <div class="dlg-foot">
+      <span id="aFootForm" style="display:contents"><button class="btn" data-close type="button">Cancelar</button><button class="btn primary" type="submit" id="aSend">Solicitar assessment</button></span>
+      <span id="aFootDone" style="display:none"><button class="btn primary" data-close type="button">Listo</button></span>
+    </div>
+  </form>
+</dialog>
+
+<!-- Nota del hiring manager -->
+<dialog id="dlgNote" aria-labelledby="nTitle">
+  <div class="dlg-head"><div><h2 id="nTitle">Dejar nota o recomendación</h2><p class="sub" id="nSub"></p></div><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <form id="fNote" novalidate>
+    <div class="dlg-body">
+      <div class="row">
+        <label>Tu nombre<input id="nHm" autocomplete="name"></label>
+        <label>Tu correo<input id="nMail" type="email" autocomplete="email" placeholder="nombre@empresa.com"></label>
+      </div>
+      <div class="row">
+        <label>Cargo o cuenta<input id="nRole" placeholder="Coordinador · Cuenta Healthcare"></label>
+        <label>Tipo<select id="nTipo"><option value="Recomendación">Recomendación</option><option value="Feedback">Feedback</option></select></label>
+      </div>
+      <label>Nota<textarea id="nText" rows="4" placeholder="Ej. Lo recomiendo para la cuenta X: buen manejo de equipo y KPIs."></textarea></label>
+      <p class="muted" style="font-size:13px;margin:-4px 0 0">La nota le llega al equipo de TA y queda guardada en el historial del candidato. Los demás coordinadores no la ven.</p>
+      <div class="err" id="nErr" role="alert"></div>
+    </div>
+    <div class="dlg-foot"><button class="btn" data-close type="button">Cancelar</button><button class="btn primary" type="submit" id="nSend">Enviar nota</button></div>
+  </form>
+</dialog>
+
 <!-- Editar candidato -->
 <dialog id="dlgEdit" aria-labelledby="eTitle">
   <div class="dlg-head"><h2 id="eTitle">Candidato</h2><button class="x" data-close aria-label="Cerrar">×</button></div>
@@ -366,7 +423,8 @@ footer .wrap{border-top-color:var(--line)}
       <div class="row"><label>Estado<select id="eEstado"></select></label><label>Fecha de ingreso al pool<input id="eIngreso" type="date"></label></div>
       <div class="row"><label>País<input id="ePais" placeholder="Colombia"></label><label>Ciudad<input id="eCiudad" placeholder="Barranquilla"></label></div>
       <div class="row"><label>Modalidad<select id="eModalidad"></select></label><label>Disponibilidad<input id="eDisp" placeholder="2 semanas"></label></div>
-      <div class="row"><label>Inglés (prueba)<select id="eIngles"></select></label><label>Expectativa total (COP)<input id="eExp" type="number" min="0" step="50000"></label></div>
+      <div class="row"><label>Inglés (prueba)<select id="eIngles"></select></label><label>Expectativa salarial total<span class="money"><select id="eMoneda" aria-label="Moneda"></select><input id="eExp" type="number" min="0" step="1" aria-label="Valor"></span></label></div>
+      <label>Restricciones horarias <small>(opcional)</small><input id="eHorario" placeholder="Ej. No trabaja domingos · solo turno de día"></label>
       <div class="row"><label>Nivel propuesto<select id="eNivel"></select></label><label>Reclutador<input id="eRec" list="recList" placeholder="Nombre del reclutador"></label></div>
       <label class="chk-top"><input id="eTop" type="checkbox"> ★ Candidato destacado (TOP): priorizar con los coordinadores</label>
       <datalist id="recList"></datalist>
@@ -418,6 +476,8 @@ footer .wrap{border-top-color:var(--line)}
       <h3>Solicitudes de entrevista</h3>
       <label>Correos que reciben las solicitudes <small>(separados por coma)</small><input id="cMails" placeholder="dani@empresa.com, mari@empresa.com"></label>
       <p class="muted" style="font-size:13px;margin:-4px 0 0">Cuando un supervisor pide entrevista, el correo les llega solo a estas personas y queda registrado en la pestaña Solicitudes de tu hoja.</p>
+      <h3>Assessments</h3>
+      <label>Assessments que pueden pedir los coordinadores <small>(uno por línea: Nombre | tiempo para realizarlo)</small><textarea id="cAssess" rows="3" placeholder="Assessment de liderazgo | 60 minutos"></textarea></label>
       <h3>Revalidación automática</h3>
       <div class="row">
         <label>Días para revalidar<input id="cRevDias" type="number" min="1" max="365" step="1"></label>
@@ -537,7 +597,18 @@ footer .wrap{border-top-color:var(--line)}
     "Enviar correo automático cada mañana con los nuevos por revalidar":"Send an automatic email every morning with new candidates to revalidate",
     "Cuando un candidato cumple estos días en el mismo estado, pasa solo a":"When a candidate reaches this many days in the same status, it automatically moves to",
     "y deja de verse para los coordinadores. El correo automático llega a los correos de arriba.":"and is hidden from coordinators. The automatic email goes to the addresses above.",
-    "En este estado desde":"In this status since", "★ Destacados":"★ Top picks", "★ TOP":"★ TOP",
+    "En este estado desde":"In this status since", "Expectativa salarial total":"Total salary expectation", "Moneda":"Currency", "Valor":"Amount",
+    "Restricciones horarias":"Schedule restrictions", "Ninguna":"None", "Ej. No trabaja domingos · solo turno de día":"E.g. No Sundays · day shift only",
+    "Dejar nota o recomendación":"Leave a note or recommendation", "✎ Dejar nota":"✎ Leave a note", "Solicitar assessment":"Request assessment", "Assessment":"Assessment",
+    "Para qué vacante o qué te gustaría validar":"Which vacancy or what you'd like to assess", "Tipo":"Type", "Recomendación":"Recommendation",
+    "Nota":"Note", "Enviar nota":"Send note", "Ej. Lo recomiendo para la cuenta X: buen manejo de equipo y KPIs.":"E.g. I recommend them for account X: strong team and KPI management.",
+    "La nota le llega al equipo de TA y queda guardada en el historial del candidato. Los demás coordinadores no la ven.":"The note goes to the TA team and is saved in the candidate's history. Other coordinators can't see it.",
+    "Escribe la nota.":"Write the note.", "Gracias, tu nota le llegó a TA.":"Thanks, your note was sent to TA.",
+    "TA todavía no ha configurado assessments.":"TA hasn't set up any assessments yet.", "Faltan datos de la nota.":"Some note details are missing.",
+    "En evaluación por":"Being evaluated by", "Nota del HM":"HM note", "Assessment pedido por HM":"Assessment requested by HM", "Entrevista pedida por HM":"Interview requested by HM",
+    "Assessments":"Assessments", "(uno por línea: Nombre | tiempo para realizarlo)":"(one per line: Name | time to complete)",
+    "Assessments que pueden pedir los coordinadores":"Assessments coordinators can request",
+ "★ Destacados":"★ Top picks", "★ TOP":"★ TOP",
     "★ Candidato destacado: TA recomienda priorizarlo.":"★ Top pick: TA recommends prioritizing this candidate.",
     "★ Candidato destacado (TOP): priorizar con los coordinadores":"★ Top pick: prioritize with coordinators",
     "Quitar de destacados":"Remove from top picks", "Marcar como destacado":"Mark as top pick",
@@ -618,7 +689,8 @@ footer .wrap{border-top-color:var(--line)}
   var $ = function(id){ return document.getElementById(id); };
   var esc = function(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); };
   var EN = window.POOL_LANG === "en";
-  var money = function(n){ return n ? "$" + Number(n).toLocaleString(EN ? "en-US" : "es-CO") : "—"; };
+  var MONEDAS = ["COP","USD","ARS","BOB","BRL","CLP","CRC","CUP","DOP","GTQ","HNL","MXN","NIO","PAB","PEN","PYG","UYU","VES","KES"];
+  var money = function(n, cur){ return n ? "$" + Number(n).toLocaleString(EN ? "en-US" : "es-CO") + " " + (cur || "COP") : "—"; };
   var initials = function(n){ return (n||"?").split(/\s+/).filter(Boolean).slice(0,2).map(function(w){ return w[0]; }).join("").toUpperCase(); };
   var isAdmin = function(){ return !!ADM; };
   var today = function(){ var d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
@@ -742,10 +814,11 @@ footer .wrap{border-top-color:var(--line)}
         (isAdmin() ? revalPill(c) : '') +
         (isAdmin() && np ? '<span class="pill" style="background:var(--bg);color:var(--muted)">Presentado '+np+'×</span>' : '') +
         (isAdmin() && c.estado === "Contratado" && (c.nivelContratado || c.fechaContratacion) ? '<span class="pill st-Contratado" style="white-space:normal">Seniority final: '+esc(c.nivelContratado||c.nivel||"—")+(c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? ' (propuesto: '+esc(c.nivel)+')' : '')+(c.fechaContratacion?' · '+fmtDate(c.fechaContratacion):'')+'</span>' : '') + '</div>' +
+        (c.evaluadoPor && VISIBLE.indexOf(c.estado) >= 0 ? '<div class="eval-tag">En evaluación por <b data-notr>'+esc(c.evaluadoPor)+'</b></div>' : '') +
         (isAdmin() ? '<div class="rec-tag'+(c.reclutador?'':' none')+'">'+(c.reclutador ? 'Reclutador: <b>'+esc(c.reclutador)+'</b>' : 'Sin reclutador asignado')+'</div>' +
           '<div class="ids">'+(c.ceipal ? 'CEIPAL <b>'+esc(c.ceipal)+'</b>' : '<span class="miss">Sin CEIPAL ID</span>')+' · '+(c.cedula ? 'Doc. <b>'+esc(c.cedula)+'</b>' : '<span class="miss">Sin documento</span>')+'</div>' : '') +
         '<dl class="facts"><div><dt>Inglés</dt><dd>'+esc(c.ingles||"—")+'</dd></div><div><dt>Disponibilidad</dt><dd>'+esc(c.disponibilidad||"—")+'</dd></div>' +
-        '<div><dt>Expectativa total</dt><dd>'+money(c.expectativa)+'</dd></div><div><dt>Modalidad</dt><dd>'+esc(c.modalidad||"—")+'</dd></div></dl>' +
+        '<div><dt>Expectativa total</dt><dd>'+money(c.expectativa, c.moneda)+'</dd></div><div><dt>Modalidad</dt><dd>'+esc(c.modalidad||"—")+'</dd></div></dl>' +
         '<p class="summary" data-notr>'+esc(c.resumen||"")+'</p>' +
         '<div class="actions"><button class="btn" type="button" data-view="'+esc(c.id)+'">Ver perfil</button>' +
         (isAdmin() ? '<button class="btn" type="button" data-edit="'+esc(c.id)+'">Editar</button>'
@@ -762,12 +835,14 @@ footer .wrap{border-top-color:var(--line)}
     $("dName").textContent = c.nombre;
     $("dSub").textContent = (isAdmin() ? ["CEIPAL " + (c.ceipal || "—"), "Doc. " + (c.cedula || "—")].join(" · ") + " · e" : "E") + "n el pool desde el " + fmtDate(c.ingreso);
     $("dPills").innerHTML = (isTop(c) ? '<span class="pill toppill">★ TOP</span>' : '') + '<span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' +
-      (isTop(c) ? '<div class="top-banner" style="flex-basis:100%">★ Candidato destacado: TA recomienda priorizarlo.</div>' : '');
+      (isTop(c) ? '<div class="top-banner" style="flex-basis:100%">★ Candidato destacado: TA recomienda priorizarlo.</div>' : '') +
+      (c.evaluadoPor && VISIBLE.indexOf(c.estado) >= 0 ? '<div class="eval-banner">En evaluación por <b data-notr>'+esc(c.evaluadoPor)+'</b></div>' : '');
     $("dFacts").innerHTML = [
       ["Ubicación", (loc(c)||"—") + (c.modalidad ? " · " + c.modalidad : "")],
       ["Disponibilidad", c.disponibilidad||"—"],
       ["Inglés (prueba)", c.ingles||"—"],
-      ["Expectativa total", money(c.expectativa)]
+      ["Expectativa total", money(c.expectativa, c.moneda)],
+      ["Restricciones horarias", c.horario || "Ninguna"]
     ].concat(isAdmin() ? [["Reclutador", c.reclutador || "Sin asignar"], ["En este estado desde", fmtDate(baseEstado(c)) + (daysIn(baseEstado(c)) !== null ? " (" + daysIn(baseEstado(c)) + " días)" : "")]] : [])
      .concat(isAdmin() ? [["Fecha de contratación", c.fechaContratacion ? fmtDate(c.fechaContratacion) : "—"], ["Seniority final", (c.nivelContratado || "—") + (c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? " (TA propuso " + c.nivel + ")" : "")]] : [])
      .map(function(r){ return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>'; }).join("");
@@ -780,7 +855,7 @@ footer .wrap{border-top-color:var(--line)}
                  : '<div class="doc empty-doc"><span class="lbl">'+label+'</span><span class="none">Sin link todavía</span></div>';
     };
     $("dLinks").innerHTML = doc("Hoja de vida", c.cv, "Ver CV");
-    $("dSchedule").hidden = VISIBLE.indexOf(c.estado) < 0;
+    $("dSchedule").hidden = $("dAssess").hidden = VISIBLE.indexOf(c.estado) < 0;
     if(isAdmin()){
       renderPres(c); $("pErr").textContent = ""; $("pFecha").value = today();
       fillSelect($("pNivContr"), [""].concat(OPT.levels)); $("pNivContr").value = ""; $("pFContr").value = "";
@@ -821,10 +896,84 @@ footer .wrap{border-top-color:var(--line)}
       $("sForm").hidden = true; $("sDone").hidden = false;
       $("sFootForm").style.display = "none"; $("sFootDone").style.display = "contents";
       $("sAlt").value = ""; $("sNotes").value = "";
+      refreshPublic();
     }, function(e){
       $("sSend").disabled = false; $("sSend").textContent = "Enviar solicitud";
       $("sErr").textContent = errText(e);
     });
+  });
+
+
+  // Refresca la lista sin el aviso de "Cargando…"
+  function refreshPublic(){
+    if(!ENDPOINT || isAdmin()) return;
+    fetch(ENDPOINT + "?action=public").then(function(r){ return r.json(); }).then(function(j){
+      if(!j.ok) return; PUB = j; C = j.config || C; render();
+    }).catch(function(){});
+  }
+  function meLoad(ids){ try { var me = JSON.parse(localStorage.getItem("pool-hm") || "{}"); ["sHm","sMail","sRole"].forEach(function(k, i){ if(me[k] && !$(ids[i]).value) $(ids[i]).value = me[k]; }); } catch(e){} }
+  function meSave(hm, mail, role){ try { localStorage.setItem("pool-hm", JSON.stringify({sHm:hm, sMail:mail, sRole:role})); } catch(e){} }
+  var okMail = function(m){ return !m || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m); };
+
+  // ---------- Solicitar assessment (los assessments los define TA en Configuración)
+  function assessList(){ return (C.assessments || []).filter(function(a){ return a && a.nombre; }); }
+  function assessMsg(){
+    var c = current, a = assessList().filter(function(x){ return x.nombre === $("aTipo").value; })[0];
+    var hm = $("aHm").value.trim() || (EN ? "[your name]" : "[tu nombre]");
+    $("aMsg").innerHTML = EN
+      ? esc(hm) + ' is requesting an assessment for <b>' + esc(c ? c.nombre : "") + '</b>.' + (a && a.tiempo ? '<br><span class="muted">Time to complete: <b>' + esc(a.tiempo) + '</b></span>' : '')
+      : esc(hm) + ' está solicitando realizar un assessment a <b>' + esc(c ? c.nombre : "") + '</b>.' + (a && a.tiempo ? '<br><span class="muted">Tiempo establecido para realizarlo: <b>' + esc(a.tiempo) + '</b></span>' : '');
+  }
+  function openAssess(c){
+    if(!c) return; current = c;
+    var l = assessList();
+    $("aSub").textContent = c.nombre + " · " + (c.nivel||"");
+    $("aTipo").innerHTML = l.map(function(a){ return '<option value="'+esc(a.nombre)+'">'+esc(a.nombre + (a.tiempo ? " · " + a.tiempo : ""))+'</option>'; }).join("");
+    $("aForm").hidden = false; $("aDone").hidden = true; $("aFootForm").style.display = "contents"; $("aFootDone").style.display = "none";
+    $("aErr").textContent = l.length ? "" : "TA todavía no ha configurado assessments.";
+    $("aSend").disabled = !l.length; $("aSend").textContent = "Solicitar assessment";
+    meLoad(["aHm","aMail","aRole"]); assessMsg();
+    if($("dlgDetail").open) $("dlgDetail").close();
+    $("dlgAssess").showModal();
+  }
+  $("aHm").addEventListener("input", assessMsg); $("aTipo").addEventListener("change", assessMsg);
+  $("dAssess").addEventListener("click", function(){ openAssess(current); });
+  $("fAssess").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var c = current, hm = $("aHm").value.trim(), mail = $("aMail").value.trim(), role = $("aRole").value.trim();
+    if(!hm){ $("aErr").textContent = "Escribe tu nombre."; $("aHm").focus(); return; }
+    if(!okMail(mail)){ $("aErr").textContent = "Revisa tu correo."; $("aMail").focus(); return; }
+    if(!$("aTipo").value) return;
+    $("aErr").textContent = ""; meSave(hm, mail, role);
+    $("aSend").disabled = true; $("aSend").textContent = "Enviando…";
+    var a = assessList().filter(function(x){ return x.nombre === $("aTipo").value; })[0] || {};
+    api("request", {data:{id:c.id, tipo:"Assessment", assessment:$("aTipo").value, solicitante:hm, correo:mail, cargo:role, comentarios:$("aNotes").value.trim()}})
+    .then(function(){
+      $("aDoneText").textContent = EN
+        ? "TA received your assessment request for " + c.nombre + (a.tiempo ? " (" + a.tiempo + ")" : "") + ". They'll contact you to coordinate it."
+        : "TA recibió tu solicitud de assessment para " + c.nombre + (a.tiempo ? " (" + a.tiempo + ")" : "") + ". Te contactarán para coordinarlo.";
+      $("aForm").hidden = true; $("aDone").hidden = false; $("aFootForm").style.display = "none"; $("aFootDone").style.display = "contents";
+      $("aNotes").value = ""; refreshPublic();
+    }, function(e){ $("aSend").disabled = false; $("aSend").textContent = "Solicitar assessment"; $("aErr").textContent = errText(e); });
+  });
+
+  // ---------- Nota o recomendación del hiring manager (queda en Presentaciones y feedback)
+  $("dNote").addEventListener("click", function(){
+    var c = current; if(!c) return;
+    $("nSub").textContent = c.nombre; $("nErr").textContent = ""; $("nSend").disabled = false; $("nText").value = "";
+    meLoad(["nHm","nMail","nRole"]);
+    $("dlgDetail").close(); $("dlgNote").showModal();
+  });
+  $("fNote").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var c = current, hm = $("nHm").value.trim(), mail = $("nMail").value.trim(), role = $("nRole").value.trim(), txt = $("nText").value.trim();
+    if(!hm){ $("nErr").textContent = "Escribe tu nombre."; $("nHm").focus(); return; }
+    if(!okMail(mail)){ $("nErr").textContent = "Revisa tu correo."; $("nMail").focus(); return; }
+    if(!txt){ $("nErr").textContent = "Escribe la nota."; $("nText").focus(); return; }
+    $("nErr").textContent = ""; meSave(hm, mail, role); $("nSend").disabled = true;
+    api("note", {data:{id:c.id, solicitante:hm, correo:mail, cargo:role, tipoNota:$("nTipo").value, nota:txt}})
+    .then(function(){ $("dlgNote").close(); toast("Gracias, tu nota le llegó a TA."); }, function(e){ $("nErr").textContent = errText(e); })
+    .finally(function(){ $("nSend").disabled = false; });
   });
 
   // ---------- Acceso TA
@@ -872,8 +1021,9 @@ footer .wrap{border-top-color:var(--line)}
   function renderPres(c){
     var items = (c.presentaciones||[]).slice().sort(function(a,b){ return String(b.fecha||"").localeCompare(String(a.fecha||"")); });
     $("dPres").innerHTML = items.length ? items.map(function(p){
+      var nota = p.tipo === "Nota HM";
       return '<div class="pres-item"><div class="ph"><b data-notr>'+esc(p.posicion)+'</b><span class="pill r-'+esc(String(p.resultado).replace(/\s/g,""))+'">'+esc(p.resultado)+'</span></div>' +
-        '<div class="muted" style="font-size:13px">'+fmtDate(p.fecha)+(p.cuenta?' · '+esc(p.cuenta):'')+'</div>' +
+        '<div class="muted" style="font-size:13px">'+(p.tipo ? '<span class="ptag'+(nota?' nota':'')+'">'+esc(nota ? "Nota del HM" : (p.tipo === "Assessment HM" ? "Assessment pedido por HM" : "Entrevista pedida por HM"))+'</span>' : '')+fmtDate(p.fecha)+(p.solicitante?' · '+esc(p.solicitante):'')+(p.cuenta && p.cuenta !== p.solicitante?' · '+esc(p.cuenta):'')+(p.correo?' · '+esc(p.correo):'')+'</div>' +
         (p.feedback ? '<p data-notr>'+esc(p.feedback)+'</p>' : '') +
         '<div class="pres-acts"><button class="linkbtn" type="button" data-editpres="'+esc(p.pid)+'">Editar</button><button class="linkbtn" type="button" data-delpres="'+esc(p.pid)+'">Eliminar</button></div></div>';
     }).join("") : '<p class="muted" style="margin:0;font-size:14px">Todavía no ha sido presentado a ninguna posición.</p>';
@@ -884,8 +1034,8 @@ footer .wrap{border-top-color:var(--line)}
     var hired = p.resultado === "Contratado";
     return '<div class="pres-item editing" data-pid="'+esc(p.pid)+'">' +
       '<div class="row"><label>Posición o vacante<input class="ep-pos" value="'+esc(p.posicion)+'"></label><label>Cuenta / hiring manager<input class="ep-cuenta" value="'+esc(p.cuenta||"")+'"></label></div>' +
-      '<div class="row"><label>Fecha de presentación<input class="ep-fecha" type="date" value="'+esc(String(p.fecha||"").slice(0,10))+'"></label><label>Resultado<select class="ep-res">'+opt(RESULTADOS, p.resultado)+'</select></label></div>' +
-      '<div class="row ep-hire"><label>Fecha de contratación <small>(si quedó contratado)</small><input class="ep-fcontr" type="date" value="'+esc(String(hired ? (c.fechaContratacion||"") : "").slice(0,10))+'"></label><label>Seniority final <small>(con el que quedó contratado)</small><select class="ep-niv">'+opt([""].concat(OPT.levels), hired ? (c.nivelContratado||"") : "")+'</select></label></div>' +
+      '<div class="row"><label>Fecha de presentación<input class="ep-fecha" type="date" value="'+esc(String(p.fecha||"").slice(0,10))+'"></label>'+(p.resultado === "Nota" ? '<input type="hidden" class="ep-res" value="Nota"><span></span>' : '<label>Resultado<select class="ep-res">'+opt(RESULTADOS, p.resultado)+'</select></label>')+'</div>' +
+      (p.resultado === "Nota" ? '' : '<div class="row ep-hire"><label>Fecha de contratación <small>(si quedó contratado)</small><input class="ep-fcontr" type="date" value="'+esc(String(hired ? (c.fechaContratacion||"") : "").slice(0,10))+'"></label><label>Seniority final <small>(con el que quedó contratado)</small><select class="ep-niv">'+opt([""].concat(OPT.levels), hired ? (c.nivelContratado||"") : "")+'</select></label></div>') +
       '<label>Feedback<textarea class="ep-fb" rows="2">'+esc(p.feedback||"")+'</textarea></label>' +
       '<div class="err ep-err" role="alert"></div>' +
       '<div class="pres-acts"><button class="btn small primary" type="button" data-savepres="'+esc(p.pid)+'">Guardar cambios</button><button class="btn small" type="button" data-cancelpres="1">Cancelar</button></div></div>';
@@ -929,9 +1079,10 @@ footer .wrap{border-top-color:var(--line)}
       var pos = q(".ep-pos").value.trim();
       if(!pos){ q(".ep-err").textContent = "Escribe la posición o vacante."; q(".ep-pos").focus(); return; }
       var res = q(".ep-res").value, hired = res === "Contratado", cid0 = current.id;
+      var fc = q(".ep-fcontr"), nc = q(".ep-niv");
       sv.disabled = true;
       adminCall("updatePres", {pres:{pid:sv.dataset.savepres, posicion:pos, cuenta:q(".ep-cuenta").value.trim(), fecha:q(".ep-fecha").value, resultado:res, feedback:q(".ep-fb").value.trim(),
-        fechaContratacion: hired ? q(".ep-fcontr").value : "", nivelContratado: hired ? q(".ep-niv").value : ""}})
+        fechaContratacion: hired && fc ? fc.value : "", nivelContratado: hired && nc ? nc.value : ""}})
         .then(function(){ openDetail(byId(cid0)); toast("Presentación actualizada."); }, function(e3){ q(".ep-err").textContent = errText(e3); sv.disabled = false; });
       return;
     }
@@ -950,7 +1101,8 @@ footer .wrap{border-top-color:var(--line)}
     var lastRec = ""; try { lastRec = localStorage.getItem("pool-rec") || ""; } catch(e){}
     var x = c || {id:"", estado:"Disponible", ingreso:today(), pais:"Colombia", modalidad:"Híbrido", ingles:"B2", nivel:"Jr", reclutador:lastRec};
     $("eTitle").textContent = c ? "Editar candidato" : "Agregar candidato";
-    var map = {eNombre:"nombre", eCeipal:"ceipal", eCedula:"cedula", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eWhy:"why", eCv:"cv", eRec:"reclutador", eFContr:"fechaContratacion", eNivContr:"nivelContratado"};
+    var map = {eNombre:"nombre", eCeipal:"ceipal", eCedula:"cedula", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eWhy:"why", eCv:"cv", eRec:"reclutador", eFContr:"fechaContratacion", eNivContr:"nivelContratado", eMoneda:"moneda", eHorario:"horario"};
+    fillSelect($("eMoneda"), MONEDAS); if(!x.moneda) x = Object.assign({}, x, {moneda:"COP"});
     Object.keys(map).forEach(function(k){
       var v = x[map[k]] == null ? "" : String(x[map[k]]);
       var el = $(k);
@@ -982,7 +1134,7 @@ footer .wrap{border-top-color:var(--line)}
     var cand = {originalId: editing ? editing.id : "", ceipal:$("eCeipal").value.trim(), cedula:$("eCedula").value.replace(/[\s.,\-]/g,""), nombre:nombre, estado:$("eEstado").value, ingreso:$("eIngreso").value,
       pais:$("ePais").value.trim(), ciudad:$("eCiudad").value.trim(), modalidad:$("eModalidad").value, disponibilidad:$("eDisp").value.trim(),
       ingles:$("eIngles").value, expectativa:$("eExp").value, nivel:$("eNivel").value, resumen:$("eResumen").value.trim(), why:$("eWhy").value.trim(),
-      cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(), top:$("eTop").checked ? "Sí" : "",
+      cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(), top:$("eTop").checked ? "Sí" : "", moneda:$("eMoneda").value, horario:$("eHorario").value.trim(),
       fechaContratacion: $("eEstado").value === "Contratado" ? $("eFContr").value : "", nivelContratado: $("eEstado").value === "Contratado" ? $("eNivContr").value : ""};
     try { if(cand.reclutador) localStorage.setItem("pool-rec", cand.reclutador); } catch(e3){}
     adminCall("saveCandidate", {candidate:cand}).then(function(){ $("dlgEdit").close(); toast("Guardado."); }, function(e2){ $("eErr").textContent = errText(e2); })
@@ -1065,6 +1217,7 @@ footer .wrap{border-top-color:var(--line)}
   $("btnSettings").addEventListener("click", function(){
     $("cEyebrow").value = C.eyebrow || ""; $("cTitleIn").value = C.title || ""; $("cSub").value = C.subtitle || "";
     $("cMails").value = (C.emails||[]).join(", ");
+    $("cAssess").value = C.assessmentsTexto != null ? C.assessmentsTexto : (C.assessments || []).map(function(a){ return a.nombre + (a.tiempo ? " | " + a.tiempo : ""); }).join("\n");
     $("cRevDias").value = C.revalidarDias || 30; $("cRevEst").value = C.revalidarEstados === "Disponible,En proceso" ? "Disponible,En proceso" : "En proceso";
     $("cRevMail").checked = C.revalidarCorreo !== "No";
     $("cPass").value = ""; $("cPass2").value = ""; $("cErr").textContent = "";
@@ -1082,7 +1235,8 @@ footer .wrap{border-top-color:var(--line)}
     if(bad.length){ $("cErr").textContent = "Revisa este correo: " + bad[0]; return; }
     var btn = $("fSettings").querySelector("[type=submit]"); btn.disabled = true;
     adminCall("saveConfig", {config:{eyebrow:$("cEyebrow").value.trim(), title:$("cTitleIn").value.trim() || "Pool de Supervisores", subtitle:$("cSub").value.trim(), emails:emails,
-      revalidarDias:String(Math.max(1, Math.round(Number($("cRevDias").value) || 30))), revalidarEstados:$("cRevEst").value, revalidarCorreo:$("cRevMail").checked ? "Sí" : "No"}})
+      revalidarDias:String(Math.max(1, Math.round(Number($("cRevDias").value) || 30))), revalidarEstados:$("cRevEst").value, revalidarCorreo:$("cRevMail").checked ? "Sí" : "No",
+      assessments:$("cAssess").value.split("\n").map(function(l){ return l.trim(); }).filter(String).join("\n")}})
       .then(function(){ return p1 ? adminCall("changePass", {pass:p1}) : null; })
       .then(function(){ $("dlgSettings").close(); toast(p1 ? "Configuración y contraseña guardadas." : "Configuración guardada."); }, function(e2){ $("cErr").textContent = errText(e2); })
       .finally(function(){ btn.disabled = false; });
@@ -1122,7 +1276,7 @@ footer .wrap{border-top-color:var(--line)}
     var hi = rows.findIndex(function(r){ return r.some(function(x){ return keyCols.indexOf(norm(x)) >= 0; }); });
     if(hi < 0){ toast("No encontré las columnas Nombre, Número de documento o CEIPAL Applicant ID. Usa la plantilla de carga.", true); return; }
     var h = rows[hi].map(norm);
-    var alias = {id:["id interno","id"], ceipal:["ceipal applicant id","ceipal id","applicant id","ceipal"], cedula:["numero de documento","documento","cedula","cc"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], reclutador:["reclutador","recruiter"], fechaContratacion:["fecha de contratacion"], nivelContratado:["seniority final","seniority contratado","nivel contratado"], fechaEstado:["fecha del estado"], top:["destacado","top","prioridad"]};
+    var alias = {id:["id interno","id"], ceipal:["ceipal applicant id","ceipal id","applicant id","ceipal"], cedula:["numero de documento","documento","cedula","cc"], nombre:["nombre"], ingreso:["fecha de ingreso","fecha"], estado:["estado"], pais:["pais"], ciudad:["ciudad","ubicacion"], modalidad:["modalidad"], disponibilidad:["disponibilidad"], ingles:["ingles","nivel de ingles","ingles (prueba)"], expectativa:["expectativa total (cop)","expectativa total","expectativa salarial","expectativa"], nivel:["nivel propuesto","nivel"], resumen:["resumen de experiencia","resumen"], why:["por que este nivel"], cv:["link cv","cv"], reclutador:["reclutador","recruiter"], fechaContratacion:["fecha de contratacion"], nivelContratado:["seniority final","seniority contratado","nivel contratado"], fechaEstado:["fecha del estado"], top:["destacado","top","prioridad"], moneda:["moneda","currency"], horario:["restricciones horarias","restricciones de horario","horario"]};
     var idx = {};
     Object.keys(alias).forEach(function(k){ idx[k] = -1; alias[k].some(function(a){ var i = h.indexOf(norm(a)); if(i >= 0){ idx[k] = i; return true; } return false; }); });
     var out = [];
@@ -1151,7 +1305,7 @@ footer .wrap{border-top-color:var(--line)}
       "CEIPAL Applicant ID": c.ceipal || "", "Número de documento": c.cedula || "", "Nombre": c.nombre || "",
       "Estado": c.estado || "", "Destacado": isTop(c) ? "Sí" : "", "Reclutador": c.reclutador || "", "Nivel propuesto": c.nivel || "", "Seniority final": c.nivelContratado || "",
       "Fecha de ingreso": c.ingreso || "", "Fecha del estado": c.fechaEstado || "", "Fecha de contratación": c.fechaContratacion || "", "País": c.pais || "", "Ciudad": c.ciudad || "",
-      "Modalidad": c.modalidad || "", "Disponibilidad": c.disponibilidad || "", "Inglés": c.ingles || "", "Expectativa total (COP)": Number(c.expectativa) || "",
+      "Modalidad": c.modalidad || "", "Disponibilidad": c.disponibilidad || "", "Inglés": c.ingles || "", "Expectativa total": Number(c.expectativa) || "", "Moneda": c.moneda || "COP", "Restricciones horarias": c.horario || "",
       "Resumen de experiencia": c.resumen || "", "Por qué este nivel": c.why || "", "Link CV": c.cv || "", "ID interno": c.id || ""
     }; });
     var ws = XLSX.utils.json_to_sheet(rows);
