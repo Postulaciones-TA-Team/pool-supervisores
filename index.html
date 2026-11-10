@@ -332,7 +332,6 @@ footer .wrap{border-top-color:var(--line)}
     <h3>Resumen del perfil</h3>
     <div class="profile-box">
       <div class="lvl-line"><span>Nivel propuesto por TA</span><span id="dLevel"></span></div>
-      <p id="dWhy" data-notr class="muted" style="font-size:14px;margin:0"></p>
       <p id="dSummary" style="margin:0;font-size:15px"></p>
     </div>
     <h3>CV</h3>
@@ -484,7 +483,6 @@ footer .wrap{border-top-color:var(--line)}
       <datalist id="recList"></datalist>
       <div class="row" id="eHireRow"><label>Fecha de contratación <small>(si quedó contratado)</small><input id="eFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="eNivContr"></select></label></div>
       <label>Resumen de experiencia (3–4 líneas)<textarea id="eResumen" rows="4"></textarea></label>
-      <label>Por qué este nivel (una línea)<input id="eWhy"></label>
       <div class="row"><label>Link del CV<input id="eCv" type="url" placeholder="https://..."></label></div>
       <div class="err" id="eErr" role="alert"></div>
     </div>
@@ -913,7 +911,6 @@ footer .wrap{border-top-color:var(--line)}
      .concat(isAdmin() ? [["Fecha de contratación", c.fechaContratacion ? fmtDate(c.fechaContratacion) : "—"], ["Seniority final", (c.nivelContratado || "—") + (c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? " (TA propuso " + c.nivel + ")" : "")]] : [])
      .map(function(r){ return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>'; }).join("");
     $("dLevel").innerHTML = '<span class="'+lvClass(c.nivel)+'" style="font-size:14px">'+esc(c.nivel||"Sin nivel")+'</span>';
-    $("dWhy").textContent = c.why || ""; $("dWhy").hidden = !c.why;
     $("dSummary").textContent = c.resumen || "Sin resumen todavía.";
     var doc = function(label, url, btn){
       url = safeUrl(url);
@@ -1112,7 +1109,6 @@ footer .wrap{border-top-color:var(--line)}
     html += row("Disponibilidad", function(c){ return esc(c.disponibilidad||"—"); });
     html += row("Modalidad", function(c){ return esc(c.modalidad||"—"); });
     html += row("Restricciones horarias", function(c){ return esc(c.horario||"Ninguna"); });
-    html += row("Por qué este nivel", function(c){ return '<span data-notr>'+esc(c.why||"—")+'</span>'; });
     html += row("Resumen", function(c){ return '<span class="sm" data-notr>'+esc(c.resumen||"—")+'</span>'; });
     html += row("Notas de hiring managers", function(c){
       var ns = c.notas || [];
@@ -1264,7 +1260,7 @@ footer .wrap{border-top-color:var(--line)}
     var lastRec = ""; try { lastRec = localStorage.getItem("pool-rec") || ""; } catch(e){}
     var x = c || {id:"", estado:"Disponible", ingreso:today(), pais:"Colombia", modalidad:"Híbrido", ingles:"B2", nivel:"Jr", reclutador:lastRec};
     $("eTitle").textContent = c ? "Editar candidato" : "Agregar candidato";
-    var map = {eNombre:"nombre", eCeipal:"ceipal", eCedula:"cedula", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eWhy:"why", eCv:"cv", eRec:"reclutador", eFContr:"fechaContratacion", eNivContr:"nivelContratado", eMoneda:"moneda", eHorario:"horario"};
+    var map = {eNombre:"nombre", eCeipal:"ceipal", eCedula:"cedula", eEstado:"estado", eIngreso:"ingreso", ePais:"pais", eCiudad:"ciudad", eModalidad:"modalidad", eDisp:"disponibilidad", eIngles:"ingles", eExp:"expectativa", eNivel:"nivel", eResumen:"resumen", eCv:"cv", eRec:"reclutador", eFContr:"fechaContratacion", eNivContr:"nivelContratado", eMoneda:"moneda", eHorario:"horario"};
     fillSelect($("eMoneda"), MONEDAS); if(!x.moneda) x = Object.assign({}, x, {moneda:"COP"});
     Object.keys(map).forEach(function(k){
       var v = x[map[k]] == null ? "" : String(x[map[k]]);
@@ -1296,7 +1292,7 @@ footer .wrap{border-top-color:var(--line)}
     var btn = e.submitter || $("fEdit").querySelector("[type=submit]"); btn.disabled = true;
     var cand = {originalId: editing ? editing.id : "", ceipal:$("eCeipal").value.trim(), cedula:$("eCedula").value.replace(/[\s.,\-]/g,""), nombre:nombre, estado:$("eEstado").value, ingreso:$("eIngreso").value,
       pais:$("ePais").value.trim(), ciudad:$("eCiudad").value.trim(), modalidad:$("eModalidad").value, disponibilidad:$("eDisp").value.trim(),
-      ingles:$("eIngles").value, expectativa:$("eExp").value, nivel:$("eNivel").value, resumen:$("eResumen").value.trim(), why:$("eWhy").value.trim(),
+      ingles:$("eIngles").value, expectativa:$("eExp").value, nivel:$("eNivel").value, resumen:$("eResumen").value.trim(),
       cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(), top:$("eTop").checked ? "Sí" : "", moneda:$("eMoneda").value, horario:$("eHorario").value.trim(),
       fechaContratacion: $("eEstado").value === "Contratado" ? $("eFContr").value : "", nivelContratado: $("eEstado").value === "Contratado" ? $("eNivContr").value : ""};
     try { if(cand.reclutador) localStorage.setItem("pool-rec", cand.reclutador); } catch(e3){}
@@ -1469,7 +1465,7 @@ footer .wrap{border-top-color:var(--line)}
       "Estado": c.estado || "", "Destacado": isTop(c) ? "Sí" : "", "Reclutador": c.reclutador || "", "Nivel propuesto": c.nivel || "", "Seniority final": c.nivelContratado || "",
       "Fecha de ingreso": c.ingreso || "", "Fecha del estado": c.fechaEstado || "", "Fecha de contratación": c.fechaContratacion || "", "País": c.pais || "", "Ciudad": c.ciudad || "",
       "Modalidad": c.modalidad || "", "Disponibilidad": c.disponibilidad || "", "Inglés": c.ingles || "", "Expectativa total": Number(c.expectativa) || "", "Moneda": c.moneda || "COP", "Restricciones horarias": c.horario || "",
-      "Resumen de experiencia": c.resumen || "", "Por qué este nivel": c.why || "", "Link CV": c.cv || "", "ID interno": c.id || ""
+      "Resumen de experiencia": c.resumen || "", "Link CV": c.cv || "", "ID interno": c.id || ""
     }; });
     var ws = XLSX.utils.json_to_sheet(rows);
     ws["!cols"] = Object.keys(rows[0]).map(function(k){ return {wch: /Resumen|Por qué|Link/.test(k) ? 40 : Math.max(12, k.length + 2)}; });
