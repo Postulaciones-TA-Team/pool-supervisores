@@ -133,6 +133,33 @@ textarea{resize:vertical;min-height:70px}
 .ok-box{text-align:center;padding:14px 4px 4px}
 .ok-box .big{width:52px;height:52px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;margin:0 auto 10px;font-size:26px;font-weight:800}
 .ok-box p{margin:6px 0 0}
+.cmp{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;user-select:none;margin:0;flex-direction:row;align-self:flex-start}
+.cmp input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+.card.is-cmp{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.cmpbar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;background:var(--ink);color:#fff;border-radius:14px;padding:10px 10px 10px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(15,25,40,.3);max-width:calc(100vw - 32px);flex-wrap:wrap}
+.cmpbar .names{font-size:14px;color:#C9D3E3;max-width:46ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmpbar .names b{color:#fff}
+.cmpbar .btn{padding:7px 12px;font-size:14px}
+.cmpbar .btn.ghost{background:transparent;color:#fff;border-color:#4B5D78}
+dialog.wide{width:min(1040px,calc(100vw - 32px))}
+.cmp-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cmp-table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;min-width:560px;table-layout:fixed}
+.cmp-table th,.cmp-table td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+.cmp-table th[scope=row]{width:150px;color:var(--muted);font-size:12.5px;font-weight:600;background:var(--bg)}
+.cmp-table thead th{border-bottom:2px solid var(--line);background:var(--card);position:relative}
+.cmp-table thead .name{font-size:16px}
+.cmp-table .rm{position:absolute;top:6px;right:6px;border:none;background:none;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px;border-radius:6px}
+.cmp-table .rm:hover{background:var(--bg);color:var(--ink)}
+.cmp-table .best{color:#2E7D32;font-weight:700}
+.cmp-table .sm{font-size:13px;color:var(--muted)}
+.cmp-table .cnote{font-size:13px;border-left:3px solid #CFC2F0;padding-left:8px;margin-top:6px}
+.cmp-table .acts{display:flex;flex-direction:column;gap:6px}
+.cmp-table .acts .btn{width:100%;padding:7px 10px;font-size:13.5px}
+.cmp-table .acts a.btn{justify-content:center}
+.cmp-table th[scope=row]{position:sticky;left:0;z-index:1}
+@media (max-width:600px){.cmp-table{min-width:0;width:auto}.cmp-table th[scope=row]{width:92px;font-size:11.5px;padding:8px}.cmp-table td,.cmp-table thead th[scope=col]{width:200px;min-width:200px}}
+body.has-cmp .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+body.has-cmp main .wrap{padding-bottom:110px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ok-soft);color:var(--ok);border-radius:8px;padding:10px 14px;font-size:14px;box-shadow:0 4px 18px rgba(0,0,0,.15)}
 footer{color:var(--muted);font-size:13px}
 footer .wrap{padding-block:18px 30px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line)}
@@ -379,6 +406,18 @@ footer .wrap{border-top-color:var(--line)}
   </form>
 </dialog>
 
+<!-- Comparar -->
+<dialog id="dlgCmp" class="wide" aria-labelledby="cmpTitle">
+  <div class="dlg-head"><div><h2 id="cmpTitle">Comparar candidatos</h2><p class="sub" id="cmpSub"></p></div><button class="x" data-close aria-label="Cerrar">×</button></div>
+  <div class="dlg-body"><div class="cmp-wrap" id="cmpBody"></div></div>
+  <div class="dlg-foot"><button class="btn" type="button" id="cmpClear">Limpiar selección</button><button class="btn primary" data-close type="button">Cerrar</button></div>
+</dialog>
+<div class="cmpbar" id="cmpBar" hidden role="region" aria-label="Comparar">
+  <span class="names" id="cmpNames"></span>
+  <button class="btn ghost" type="button" id="cmpBarClear">Limpiar</button>
+  <button class="btn primary" type="button" id="cmpOpen">Comparar</button>
+</div>
+
 <!-- Assessment -->
 <dialog id="dlgAssess" aria-labelledby="aTitle">
   <div class="dlg-head"><div><h2 id="aTitle">Solicitar assessment</h2><p class="sub" id="aSub"></p></div><button class="x" data-close aria-label="Cerrar">×</button></div>
@@ -620,7 +659,8 @@ footer .wrap{border-top-color:var(--line)}
     "Para qué vacante o qué te gustaría validar":"Which vacancy or what you'd like to assess", "Tipo":"Type", "Recomendación":"Recommendation",
     "Nota":"Note", "Enviar nota":"Send note", "Ej. Lo recomiendo para la cuenta X: buen manejo de equipo y KPIs.":"E.g. I recommend them for account X: strong team and KPI management.",
     "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"The note goes to the TA team and is saved in the candidate's history. Other coordinators can't see it.",
-    "Escribe la nota.":"Write the note.", "Notas de hiring managers":"Hiring manager notes", "Gracias, tu nota quedó publicada.":"Thanks, your note was posted.",
+    "Escribe la nota.":"Write the note.", "Comparar":"Compare", "Comparar candidatos":"Compare candidates", "Limpiar selección":"Clear selection", "Limpiar":"Clear",
+    "Quitar de la comparación":"Remove from comparison", "Por qué este nivel":"Why this level", "Resumen":"Summary", "Sin notas":"No notes", "nota":"note", "notas":"notes", "Notas de hiring managers":"Hiring manager notes", "Gracias, tu nota quedó publicada.":"Thanks, your note was posted.",
     "Todavía no hay notas. ¿Lo conoces? Deja una recomendación o feedback.":"No notes yet. Know this candidate? Leave a recommendation or feedback.",
     "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"Other coordinators will see the note on the candidate's profile, and it's also sent to the TA team.", "Gracias, tu nota le llegó a TA.":"Thanks, your note was sent to TA.",
     "TA todavía no ha configurado assessments.":"TA hasn't set up any assessments yet.", "Faltan datos de la nota.":"Some note details are missing.",
@@ -815,7 +855,7 @@ footer .wrap{border-top-color:var(--line)}
 
   // ---------- Fichas
   function render(){
-    renderStats(); updRevalBadge();
+    renderStats(); updRevalBadge(); if(typeof updCmpBar === "function") updCmpBar();
     if(!loaded){ $("count").textContent = ""; return; }
     var items = filtered();
     $("count").textContent = items.length === 1 ? "1 candidato" : items.length + " candidatos";
@@ -829,7 +869,8 @@ footer .wrap{border-top-color:var(--line)}
     $("grid").innerHTML = items.map(function(c){
       var dd = daysIn(c.ingreso), np = (c.presentaciones||[]).length;
       var top = isTop(c);
-      return '<article class="card'+(top ? ' is-top' : '')+'">' +
+      var inCmp = (typeof CMP !== 'undefined' && CMP || []).indexOf(c.id) >= 0;
+      return '<article class="card'+(top ? ' is-top' : '')+(inCmp ? ' is-cmp' : '')+'">' +
         (isAdmin() ? '<button class="star'+(top ? ' on' : '')+'" type="button" data-top="'+esc(c.id)+'" aria-pressed="'+top+'" aria-label="'+(top ? 'Quitar de destacados' : 'Marcar como destacado')+'" title="'+(top ? 'Quitar de destacados' : 'Marcar como destacado')+'">'+(top ? '★' : '☆')+'</button>' : '') +
         '<div class="top"><div class="av" style="'+avColors(c.nivel)+'">'+esc(initials(c.nombre))+'</div>' +
         '<div style="min-width:0"><p class="name" data-notr>'+esc(c.nombre)+'</p><p class="sub">'+esc(loc(c))+'</p></div></div>' +
@@ -844,6 +885,7 @@ footer .wrap{border-top-color:var(--line)}
         '<div><dt>Expectativa total</dt><dd>'+money(c.expectativa, c.moneda)+'</dd></div><div><dt>Modalidad</dt><dd>'+esc(c.modalidad||"—")+'</dd></div></dl>' +
         '<p class="summary" data-notr>'+esc(c.resumen||"")+'</p>' +
         ((c.notas||[]).length ? '<span class="note-count">✎ '+(c.notas.length === 1 ? '1 nota de hiring manager' : c.notas.length + ' notas de hiring managers')+'</span>' : '') +
+        '<label class="cmp"><input type="checkbox" data-cmp="'+esc(c.id)+'"'+(inCmp ? ' checked' : '')+'> Comparar</label>' +
         '<div class="actions"><button class="btn" type="button" data-view="'+esc(c.id)+'">Ver perfil</button>' +
         (isAdmin() ? '<button class="btn" type="button" data-edit="'+esc(c.id)+'">Editar</button>'
                    : (VISIBLE.indexOf(c.estado) >= 0 ? '<button class="btn primary" type="button" data-sched="'+esc(c.id)+'">Agendar</button>' : '')) +
@@ -1022,6 +1064,80 @@ footer .wrap{border-top-color:var(--line)}
     .then(function(){ $("dlgNote").close(); toast("Gracias, tu nota quedó publicada."); refreshPublicThen(c.id); }, function(e){ $("nErr").textContent = errText(e); })
     .finally(function(){ $("nSend").disabled = false; });
   });
+
+
+  // ---------- Comparar candidatos (hasta 3, lado a lado)
+  var CMP = [];
+  function cmpItems(){ return CMP.map(byId).filter(Boolean); }
+  function updCmpBar(){
+    CMP = CMP.filter(function(id){ return !!byId(id); });
+    var items = cmpItems();
+    $("cmpBar").hidden = !items.length;
+    document.body.classList.toggle("has-cmp", !!items.length);
+    $("cmpNames").innerHTML = items.length === 1
+      ? '<b data-notr>' + esc(items[0].nombre) + '</b> · ' + (EN ? "pick 1 or 2 more" : "elige 1 o 2 más")
+      : items.map(function(c){ return '<b data-notr>' + esc(c.nombre.split(" ")[0]) + '</b>'; }).join(" · ");
+    $("cmpOpen").disabled = items.length < 2;
+    $("cmpOpen").textContent = (EN ? "Compare" : "Comparar") + " (" + items.length + ")";
+  }
+  function toggleCmp(id, on){
+    var i = CMP.indexOf(id);
+    if(on && i < 0){
+      if(CMP.length >= 3){ toast(EN ? "You can compare up to 3 candidates." : "Puedes comparar hasta 3 candidatos.", true); render(); return; }
+      CMP.push(id);
+    }
+    if(!on && i >= 0) CMP.splice(i, 1);
+    render();
+  }
+  function lvRank(l){ return ({"Jr":1,"Specialist":2,"Senior":3})[l] || 0; }
+  function engRank(l){ return ["A1","A2","B1","B2","C1","C2"].indexOf(String(l||"").toUpperCase()); }
+  function renderCmp(){
+    var items = cmpItems();
+    if(items.length < 2){ $("dlgCmp").close(); return; }
+    $("cmpSub").textContent = items.length + (EN ? " candidates side by side" : " candidatos lado a lado");
+    var maxEng = Math.max.apply(null, items.map(function(c){ return engRank(c.ingles); }));
+    var sameCur = items.every(function(c){ return (c.moneda||"COP") === (items[0].moneda||"COP"); });
+    var exps = items.map(function(c){ return Number(c.expectativa) || 0; }).filter(Boolean);
+    var minExp = sameCur && exps.length > 1 ? Math.min.apply(null, exps) : null;
+    var row = function(label, fn){ return '<tr><th scope="row">'+esc(label)+'</th>' + items.map(function(c){ return '<td>'+fn(c)+'</td>'; }).join("") + '</tr>'; };
+    var html = '<table class="cmp-table"><thead><tr><th scope="row"></th>' + items.map(function(c){
+      return '<th scope="col"><button class="rm" type="button" data-cmprm="'+esc(c.id)+'" aria-label="Quitar de la comparación" title="Quitar">×</button>' +
+        '<div class="top"><div class="av" style="'+avColors(c.nivel)+'">'+esc(initials(c.nombre))+'</div><div style="min-width:0"><p class="name" data-notr>'+esc(c.nombre)+'</p><p class="sub">'+esc(loc(c))+'</p></div></div>' +
+        (isTop(c) ? '<div style="margin-top:8px"><span class="pill toppill">★ TOP</span></div>' : '') + '</th>';
+    }).join("") + '</tr></thead><tbody>';
+    html += row("Nivel propuesto", function(c){ return '<span class="'+lvClass(c.nivel)+'">'+esc(c.nivel||"Sin nivel")+'</span>'; });
+    html += row("Estado", function(c){ return '<span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' + (c.evaluadoPor && VISIBLE.indexOf(c.estado) >= 0 ? '<div class="sm" style="margin-top:6px">En evaluación por <b data-notr>'+esc(c.evaluadoPor)+'</b></div>' : ''); });
+    html += row("Inglés (prueba)", function(c){ return '<span class="'+(engRank(c.ingles) === maxEng && maxEng >= 0 ? 'best' : '')+'">'+esc(c.ingles||"—")+'</span>'; });
+    html += row("Expectativa total", function(c){ var n = Number(c.expectativa)||0; return '<span class="'+(minExp && n === minExp ? 'best' : '')+'">'+money(c.expectativa, c.moneda)+'</span>'; });
+    html += row("Disponibilidad", function(c){ return esc(c.disponibilidad||"—"); });
+    html += row("Modalidad", function(c){ return esc(c.modalidad||"—"); });
+    html += row("Restricciones horarias", function(c){ return esc(c.horario||"Ninguna"); });
+    html += row("Por qué este nivel", function(c){ return '<span data-notr>'+esc(c.why||"—")+'</span>'; });
+    html += row("Resumen", function(c){ return '<span class="sm" data-notr>'+esc(c.resumen||"—")+'</span>'; });
+    html += row("Notas de hiring managers", function(c){
+      var ns = c.notas || [];
+      if(!ns.length) return '<span class="sm">Sin notas</span>';
+      return '<b>'+ns.length+'</b> <span class="sm">'+(ns.length === 1 ? 'nota' : 'notas')+'</span>' + ns.slice(0,2).map(function(n){ return '<div class="cnote"><b data-notr>'+esc(n.autor)+'</b> <span class="sm">('+esc(n.tipo)+')</span><br><span data-notr>'+esc(String(n.texto).slice(0,140))+(String(n.texto).length > 140 ? '…' : '')+'</span></div>'; }).join("");
+    });
+    html += row("", function(c){
+      var u = safeUrl(c.cv), can = VISIBLE.indexOf(c.estado) >= 0 && !isAdmin();
+      return '<div class="acts">' + (u ? '<a class="btn" href="'+esc(u)+'" target="_blank" rel="noopener">Ver CV</a>' : '') +
+        '<button class="btn" type="button" data-cmpview="'+esc(c.id)+'">Ver perfil</button>' +
+        (can ? '<button class="btn" type="button" data-cmpassess="'+esc(c.id)+'">Solicitar assessment</button><button class="btn primary" type="button" data-cmpsched="'+esc(c.id)+'">Agendar</button>' : '') + '</div>';
+    });
+    $("cmpBody").innerHTML = html + '</tbody></table>';
+  }
+  $("cmpOpen").addEventListener("click", function(){ if(cmpItems().length < 2) return; renderCmp(); $("dlgCmp").showModal(); });
+  function clearCmp(){ CMP = []; render(); if($("dlgCmp").open) $("dlgCmp").close(); }
+  $("cmpClear").addEventListener("click", clearCmp); $("cmpBarClear").addEventListener("click", clearCmp);
+  $("cmpBody").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    if(b.dataset.cmprm){ toggleCmp(b.dataset.cmprm, false); renderCmp(); return; }
+    var id = b.dataset.cmpview || b.dataset.cmpsched || b.dataset.cmpassess; if(!id) return;
+    $("dlgCmp").close();
+    if(b.dataset.cmpview) openDetail(byId(id)); else if(b.dataset.cmpsched) openSched(byId(id)); else openAssess(byId(id));
+  });
+  $("grid").addEventListener("change", function(e){ if(e.target.dataset && e.target.dataset.cmp) toggleCmp(e.target.dataset.cmp, e.target.checked); });
 
   // ---------- Acceso TA
   var setupMode = false;
