@@ -133,6 +133,8 @@ textarea{resize:vertical;min-height:70px}
 .ok-box{text-align:center;padding:14px 4px 4px}
 .ok-box .big{width:52px;height:52px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;margin:0 auto 10px;font-size:26px;font-weight:800}
 .ok-box p{margin:6px 0 0}
+#fCmp[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+body:not(.cmp-mode) .cmp{display:none!important}
 .cmp{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;user-select:none;margin:0;flex-direction:row;align-self:flex-start}
 .cmp input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
 .card.is-cmp{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
@@ -286,6 +288,7 @@ footer .wrap{border-top-color:var(--line)}
     <select id="fCiudad" aria-label="Ciudad"><option value="">Todas las ciudades</option></select>
     <select id="fRec" class="admin-only" aria-label="Reclutador"><option value="">Todos los reclutadores</option></select>
     <button id="fTop" class="ftop" type="button" aria-pressed="false">★ Destacados</button>
+    <button id="fCmp" class="ftop" type="button" aria-pressed="false">⇆ Comparar</button>
   </div>
 </div>
 
@@ -413,7 +416,7 @@ footer .wrap{border-top-color:var(--line)}
 </dialog>
 <div class="cmpbar" id="cmpBar" hidden role="region" aria-label="Comparar">
   <span class="names" id="cmpNames"></span>
-  <button class="btn ghost" type="button" id="cmpBarClear">Limpiar</button>
+  <button class="btn ghost" type="button" id="cmpBarClear">Cancelar</button>
   <button class="btn primary" type="button" id="cmpOpen">Comparar</button>
 </div>
 
@@ -657,7 +660,7 @@ footer .wrap{border-top-color:var(--line)}
     "Para qué vacante o qué te gustaría validar":"Which vacancy or what you'd like to assess", "Tipo":"Type", "Recomendación":"Recommendation",
     "Nota":"Note", "Enviar nota":"Send note", "Ej. Lo recomiendo para la cuenta X: buen manejo de equipo y KPIs.":"E.g. I recommend them for account X: strong team and KPI management.",
     "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"The note goes to the TA team and is saved in the candidate's history. Other coordinators can't see it.",
-    "Escribe la nota.":"Write the note.", "Comparar":"Compare", "Comparar candidatos":"Compare candidates", "Limpiar selección":"Clear selection", "Limpiar":"Clear",
+    "Escribe la nota.":"Write the note.", "Comparar":"Compare", "⇆ Comparar":"⇆ Compare", "Comparar candidatos":"Compare candidates", "Limpiar selección":"Clear selection", "Limpiar":"Clear",
     "Quitar de la comparación":"Remove from comparison", "Por qué este nivel":"Why this level", "Resumen":"Summary", "Sin notas":"No notes", "nota":"note", "notas":"notes", "Notas de hiring managers":"Hiring manager notes", "Gracias, tu nota quedó publicada.":"Thanks, your note was posted.",
     "Todavía no hay notas. ¿Lo conoces? Deja una recomendación o feedback.":"No notes yet. Know this candidate? Leave a recommendation or feedback.",
     "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"Other coordinators will see the note on the candidate's profile, and it's also sent to the TA team.", "Gracias, tu nota le llegó a TA.":"Thanks, your note was sent to TA.",
@@ -1064,14 +1067,22 @@ footer .wrap{border-top-color:var(--line)}
 
 
   // ---------- Comparar candidatos (hasta 3, lado a lado)
-  var CMP = [];
+  var CMP = [], CMPMODE = false;
+  function setCmpMode(on){
+    CMPMODE = on; if(!on) CMP = [];
+    document.body.classList.toggle("cmp-mode", on); $("fCmp").setAttribute("aria-pressed", on);
+    if(!on && $("dlgCmp").open) $("dlgCmp").close();
+    render();
+    if(on) toast(EN ? "Check 2 or 3 candidates to compare them." : "Marca 2 o 3 candidatos para compararlos.");
+  }
+  $("fCmp").addEventListener("click", function(){ setCmpMode(!CMPMODE); });
   function cmpItems(){ return CMP.map(byId).filter(Boolean); }
   function updCmpBar(){
     CMP = CMP.filter(function(id){ return !!byId(id); });
     var items = cmpItems();
-    $("cmpBar").hidden = !items.length;
-    document.body.classList.toggle("has-cmp", !!items.length);
-    $("cmpNames").innerHTML = items.length === 1
+    $("cmpBar").hidden = !CMPMODE;
+    document.body.classList.toggle("has-cmp", CMPMODE);
+    $("cmpNames").innerHTML = !items.length ? (EN ? "Check 2 or 3 candidates" : "Marca 2 o 3 candidatos") : items.length === 1
       ? '<b data-notr>' + esc(items[0].nombre) + '</b> · ' + (EN ? "pick 1 or 2 more" : "elige 1 o 2 más")
       : items.map(function(c){ return '<b data-notr>' + esc(c.nombre.split(" ")[0]) + '</b>'; }).join(" · ");
     $("cmpOpen").disabled = items.length < 2;
@@ -1125,7 +1136,7 @@ footer .wrap{border-top-color:var(--line)}
   }
   $("cmpOpen").addEventListener("click", function(){ if(cmpItems().length < 2) return; renderCmp(); $("dlgCmp").showModal(); });
   function clearCmp(){ CMP = []; render(); if($("dlgCmp").open) $("dlgCmp").close(); }
-  $("cmpClear").addEventListener("click", clearCmp); $("cmpBarClear").addEventListener("click", clearCmp);
+  $("cmpClear").addEventListener("click", clearCmp); $("cmpBarClear").addEventListener("click", function(){ setCmpMode(false); });
   $("cmpBody").addEventListener("click", function(e){
     var b = e.target.closest("button"); if(!b) return;
     if(b.dataset.cmprm){ toggleCmp(b.dataset.cmprm, false); renderCmp(); return; }
