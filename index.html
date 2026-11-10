@@ -165,6 +165,18 @@ body.admin .hm-only{display:none !important}
 .ptag{display:inline-block;font-size:11.5px;font-weight:700;color:#0B4A9E;background:#EAF2FF;border-radius:6px;padding:1px 7px;margin-right:6px}
 .ptag.nota{color:#5B3BA8;background:#F1ECFB}
 .money{display:flex;gap:6px}.money select{width:96px;flex:none}.money input{flex:1;min-width:0}
+.notes{display:flex;flex-direction:column;gap:8px}
+.hmnote{border:1px solid var(--line);border-left:3px solid #8B6AD8;border-radius:10px;padding:10px 12px;background:#FBFAFE}
+.hmnote.rec{border-left-color:var(--accent);background:#F7F9FF}
+.hmnote .nh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.hmnote .nh b{color:var(--ink)}
+.hmnote p{margin:6px 0 0;font-size:14.5px;white-space:pre-line;color:var(--ink)}
+.note-empty{font-size:14px;color:var(--muted);margin:0}
+.note-count{font-size:12.5px;color:#5B3BA8}
+.assess-edit{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.assess-edit .ae-row{display:flex;gap:8px;align-items:center}
+.assess-edit input{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:15px;background:var(--card);min-width:0}
+.assess-edit .x{font-size:20px}
 .assess-msg{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:15px;margin-bottom:12px}
 /* ===== Diseño: suave con acentos azules ===== */
 :root{--bg:#F6F6F3;--card:#fff;--line:#E7E5DF;--ink:#1C2430;--muted:#646B76;--accent:#1F4FD1;--accent-soft:#E9EFFD}
@@ -298,6 +310,8 @@ footer .wrap{border-top-color:var(--line)}
     </div>
     <h3>CV</h3>
     <div class="docs" id="dLinks"></div>
+    <h3>Notas de hiring managers</h3>
+    <div class="notes" id="dNotes"></div>
     <div class="admin-only">
       <h3>Presentaciones y feedback <span style="font-weight:500;text-transform:none;letter-spacing:0">(solo TA)</span></h3>
       <div class="pres" id="dPres"></div>
@@ -378,6 +392,7 @@ footer .wrap{border-top-color:var(--line)}
         <label>Cargo o cuenta<input id="aRole" placeholder="Coordinador · Cuenta Healthcare"></label>
         <label>Assessment<select id="aTipo"></select></label>
       </div>
+      <label>Tiempo para realizarlo<input id="aTiempo" placeholder="Ej. 48 horas, 2 días, antes del viernes"></label>
       <div class="assess-msg" id="aMsg"></div>
       <label>Comentarios <small>(opcional)</small><textarea id="aNotes" rows="2" placeholder="Para qué vacante o qué te gustaría validar"></textarea></label>
       <div class="err" id="aErr" role="alert"></div>
@@ -406,7 +421,7 @@ footer .wrap{border-top-color:var(--line)}
         <label>Tipo<select id="nTipo"><option value="Recomendación">Recomendación</option><option value="Feedback">Feedback</option></select></label>
       </div>
       <label>Nota<textarea id="nText" rows="4" placeholder="Ej. Lo recomiendo para la cuenta X: buen manejo de equipo y KPIs."></textarea></label>
-      <p class="muted" style="font-size:13px;margin:-4px 0 0">La nota le llega al equipo de TA y queda guardada en el historial del candidato. Los demás coordinadores no la ven.</p>
+      <p class="muted" style="font-size:13px;margin:-4px 0 0">La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.</p>
       <div class="err" id="nErr" role="alert"></div>
     </div>
     <div class="dlg-foot"><button class="btn" data-close type="button">Cancelar</button><button class="btn primary" type="submit" id="nSend">Enviar nota</button></div>
@@ -477,7 +492,9 @@ footer .wrap{border-top-color:var(--line)}
       <label>Correos que reciben las solicitudes <small>(separados por coma)</small><input id="cMails" placeholder="dani@empresa.com, mari@empresa.com"></label>
       <p class="muted" style="font-size:13px;margin:-4px 0 0">Cuando un supervisor pide entrevista, el correo les llega solo a estas personas y queda registrado en la pestaña Solicitudes de tu hoja.</p>
       <h3>Assessments</h3>
-      <label>Assessments que pueden pedir los coordinadores <small>(uno por línea: Nombre | tiempo para realizarlo)</small><textarea id="cAssess" rows="3" placeholder="Assessment de liderazgo | 60 minutos"></textarea></label>
+      <p class="muted" style="font-size:13px;margin:0 0 8px">Los coordinadores eligen uno de esta lista y escriben cuánto tiempo hay para realizarlo.</p>
+      <div id="cAssessList" class="assess-edit"></div>
+      <button class="btn small" type="button" id="cAssessAdd">+ Agregar assessment</button>
       <h3>Revalidación automática</h3>
       <div class="row">
         <label>Días para revalidar<input id="cRevDias" type="number" min="1" max="365" step="1"></label>
@@ -602,12 +619,17 @@ footer .wrap{border-top-color:var(--line)}
     "Dejar nota o recomendación":"Leave a note or recommendation", "✎ Dejar nota":"✎ Leave a note", "Solicitar assessment":"Request assessment", "Assessment":"Assessment",
     "Para qué vacante o qué te gustaría validar":"Which vacancy or what you'd like to assess", "Tipo":"Type", "Recomendación":"Recommendation",
     "Nota":"Note", "Enviar nota":"Send note", "Ej. Lo recomiendo para la cuenta X: buen manejo de equipo y KPIs.":"E.g. I recommend them for account X: strong team and KPI management.",
-    "La nota le llega al equipo de TA y queda guardada en el historial del candidato. Los demás coordinadores no la ven.":"The note goes to the TA team and is saved in the candidate's history. Other coordinators can't see it.",
-    "Escribe la nota.":"Write the note.", "Gracias, tu nota le llegó a TA.":"Thanks, your note was sent to TA.",
+    "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"The note goes to the TA team and is saved in the candidate's history. Other coordinators can't see it.",
+    "Escribe la nota.":"Write the note.", "Notas de hiring managers":"Hiring manager notes", "Gracias, tu nota quedó publicada.":"Thanks, your note was posted.",
+    "Todavía no hay notas. ¿Lo conoces? Deja una recomendación o feedback.":"No notes yet. Know this candidate? Leave a recommendation or feedback.",
+    "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"Other coordinators will see the note on the candidate's profile, and it's also sent to the TA team.", "Gracias, tu nota le llegó a TA.":"Thanks, your note was sent to TA.",
     "TA todavía no ha configurado assessments.":"TA hasn't set up any assessments yet.", "Faltan datos de la nota.":"Some note details are missing.",
     "En evaluación por":"Being evaluated by", "Nota del HM":"HM note", "Assessment pedido por HM":"Assessment requested by HM", "Entrevista pedida por HM":"Interview requested by HM",
     "Assessments":"Assessments", "(uno por línea: Nombre | tiempo para realizarlo)":"(one per line: Name | time to complete)",
     "Assessments que pueden pedir los coordinadores":"Assessments coordinators can request",
+    "Tiempo para realizarlo":"Time to complete", "Ej. 48 horas, 2 días, antes del viernes":"E.g. 48 hours, 2 days, by Friday",
+    "Escribe el tiempo para realizarlo.":"Enter the time to complete it.", "+ Agregar assessment":"+ Add assessment", "Quitar":"Remove",
+    "Los coordinadores eligen uno de esta lista y escriben cuánto tiempo hay para realizarlo.":"Coordinators pick one from this list and write how much time there is to complete it.",
  "★ Destacados":"★ Top picks", "★ TOP":"★ TOP",
     "★ Candidato destacado: TA recomienda priorizarlo.":"★ Top pick: TA recommends prioritizing this candidate.",
     "★ Candidato destacado (TOP): priorizar con los coordinadores":"★ Top pick: prioritize with coordinators",
@@ -626,6 +648,7 @@ footer .wrap{border-top-color:var(--line)}
     [/^(\d+) candidatos nuevos y (\d+) actualizados\.$/, "$1 new candidates and $2 updated."],
     [/^(\d+) candidatos descargados\.$/, "$1 candidates downloaded."],
     [/^Revisa este correo: (.*)$/, "Check this email: $1"],
+    [/^✎ 1 nota de hiring manager$/, "✎ 1 hiring manager note"], [/^✎ (\d+) notas de hiring managers$/, "✎ $1 hiring manager notes"],
     [/^Estaba: (.*)$/, function(m, e){ return "Was: " + (D[e] || e); }],
     [/^· (?:Reclutador: (.*?)|(Sin reclutador asignado))(?: · Estaba: (.*))?$/, function(m, r, none, e){ return "· " + (none ? "No recruiter assigned" : "Recruiter: " + r) + (e ? " · Was: " + (D[e] || e) : ""); }],
     [/^Revalidar en (\d+) días$/, "Revalidate in $1 days"],
@@ -820,6 +843,7 @@ footer .wrap{border-top-color:var(--line)}
         '<dl class="facts"><div><dt>Inglés</dt><dd>'+esc(c.ingles||"—")+'</dd></div><div><dt>Disponibilidad</dt><dd>'+esc(c.disponibilidad||"—")+'</dd></div>' +
         '<div><dt>Expectativa total</dt><dd>'+money(c.expectativa, c.moneda)+'</dd></div><div><dt>Modalidad</dt><dd>'+esc(c.modalidad||"—")+'</dd></div></dl>' +
         '<p class="summary" data-notr>'+esc(c.resumen||"")+'</p>' +
+        ((c.notas||[]).length ? '<span class="note-count">✎ '+(c.notas.length === 1 ? '1 nota de hiring manager' : c.notas.length + ' notas de hiring managers')+'</span>' : '') +
         '<div class="actions"><button class="btn" type="button" data-view="'+esc(c.id)+'">Ver perfil</button>' +
         (isAdmin() ? '<button class="btn" type="button" data-edit="'+esc(c.id)+'">Editar</button>'
                    : (VISIBLE.indexOf(c.estado) >= 0 ? '<button class="btn primary" type="button" data-sched="'+esc(c.id)+'">Agendar</button>' : '')) +
@@ -855,6 +879,11 @@ footer .wrap{border-top-color:var(--line)}
                  : '<div class="doc empty-doc"><span class="lbl">'+label+'</span><span class="none">Sin link todavía</span></div>';
     };
     $("dLinks").innerHTML = doc("Hoja de vida", c.cv, "Ver CV");
+    var ns = c.notas || [];
+    $("dNotes").innerHTML = ns.length ? ns.map(function(n){
+      var rec = n.tipo === "Recomendación";
+      return '<div class="hmnote'+(rec?' rec':'')+'"><div class="nh"><span class="pill '+(rec?'st-Contratado':'r-Nota')+'">'+esc(n.tipo)+'</span><b data-notr>'+esc(n.autor||"")+'</b>'+(n.cargo?'<span data-notr>· '+esc(n.cargo)+'</span>':'')+'<span>· '+fmtDate(n.fecha)+'</span></div><p data-notr>'+esc(n.texto)+'</p></div>';
+    }).join("") : '<p class="note-empty">Todavía no hay notas. ¿Lo conoces? Deja una recomendación o feedback.</p>';
     $("dSchedule").hidden = $("dAssess").hidden = VISIBLE.indexOf(c.estado) < 0;
     if(isAdmin()){
       renderPres(c); $("pErr").textContent = ""; $("pFecha").value = today();
@@ -911,6 +940,12 @@ footer .wrap{border-top-color:var(--line)}
       if(!j.ok) return; PUB = j; C = j.config || C; render();
     }).catch(function(){});
   }
+  function refreshPublicThen(id){
+    if(!ENDPOINT) return;
+    fetch(ENDPOINT + "?action=public").then(function(r){ return r.json(); }).then(function(j){
+      if(!j.ok) return; PUB = j; C = j.config || C; render(); var c = byId(id); if(c) openDetail(c);
+    }).catch(function(){});
+  }
   function meLoad(ids){ try { var me = JSON.parse(localStorage.getItem("pool-hm") || "{}"); ["sHm","sMail","sRole"].forEach(function(k, i){ if(me[k] && !$(ids[i]).value) $(ids[i]).value = me[k]; }); } catch(e){} }
   function meSave(hm, mail, role){ try { localStorage.setItem("pool-hm", JSON.stringify({sHm:hm, sMail:mail, sRole:role})); } catch(e){} }
   var okMail = function(m){ return !m || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m); };
@@ -918,17 +953,18 @@ footer .wrap{border-top-color:var(--line)}
   // ---------- Solicitar assessment (los assessments los define TA en Configuración)
   function assessList(){ return (C.assessments || []).filter(function(a){ return a && a.nombre; }); }
   function assessMsg(){
-    var c = current, a = assessList().filter(function(x){ return x.nombre === $("aTipo").value; })[0];
+    var c = current, a = {tiempo: $("aTiempo").value.trim()};
     var hm = $("aHm").value.trim() || (EN ? "[your name]" : "[tu nombre]");
     $("aMsg").innerHTML = EN
-      ? esc(hm) + ' is requesting an assessment for <b>' + esc(c ? c.nombre : "") + '</b>.' + (a && a.tiempo ? '<br><span class="muted">Time to complete: <b>' + esc(a.tiempo) + '</b></span>' : '')
-      : esc(hm) + ' está solicitando realizar un assessment a <b>' + esc(c ? c.nombre : "") + '</b>.' + (a && a.tiempo ? '<br><span class="muted">Tiempo establecido para realizarlo: <b>' + esc(a.tiempo) + '</b></span>' : '');
+      ? esc(hm) + ' is requesting the <b>' + esc($("aTipo").value) + '</b> for <b>' + esc(c ? c.nombre : "") + '</b>.' + (a && a.tiempo ? '<br><span class="muted">Time to complete: <b>' + esc(a.tiempo) + '</b></span>' : '')
+      : esc(hm) + ' está solicitando realizar el <b>' + esc($("aTipo").value) + '</b> a <b>' + esc(c ? c.nombre : "") + '</b>.' + (a && a.tiempo ? '<br><span class="muted">Tiempo para realizarlo: <b>' + esc(a.tiempo) + '</b></span>' : '');
   }
   function openAssess(c){
     if(!c) return; current = c;
     var l = assessList();
     $("aSub").textContent = c.nombre + " · " + (c.nivel||"");
-    $("aTipo").innerHTML = l.map(function(a){ return '<option value="'+esc(a.nombre)+'">'+esc(a.nombre + (a.tiempo ? " · " + a.tiempo : ""))+'</option>'; }).join("");
+    $("aTipo").innerHTML = l.map(function(a){ return '<option value="'+esc(a.nombre)+'">'+esc(a.nombre)+'</option>'; }).join("");
+    $("aTiempo").value = "";
     $("aForm").hidden = false; $("aDone").hidden = true; $("aFootForm").style.display = "contents"; $("aFootDone").style.display = "none";
     $("aErr").textContent = l.length ? "" : "TA todavía no ha configurado assessments.";
     $("aSend").disabled = !l.length; $("aSend").textContent = "Solicitar assessment";
@@ -936,7 +972,17 @@ footer .wrap{border-top-color:var(--line)}
     if($("dlgDetail").open) $("dlgDetail").close();
     $("dlgAssess").showModal();
   }
-  $("aHm").addEventListener("input", assessMsg); $("aTipo").addEventListener("change", assessMsg);
+  $("aHm").addEventListener("input", assessMsg); $("aTipo").addEventListener("change", assessMsg); $("aTiempo").addEventListener("input", function(){ $("aErr").textContent = ""; assessMsg(); });
+  function renderAssessEdit(names){
+    $("cAssessList").innerHTML = (names.length ? names : [""]).map(function(n){
+      return '<div class="ae-row"><input value="'+esc(n)+'" placeholder="Assessment vertical Healthcare" aria-label="Assessment"><button class="x" type="button" data-aedel aria-label="Quitar">×</button></div>';
+    }).join("");
+  }
+  $("cAssessAdd").addEventListener("click", function(){
+    $("cAssessList").insertAdjacentHTML("beforeend", '<div class="ae-row"><input placeholder="Assessment vertical Healthcare" aria-label="Assessment"><button class="x" type="button" data-aedel aria-label="Quitar">×</button></div>');
+    var ins = $("cAssessList").querySelectorAll("input"); ins[ins.length-1].focus();
+  });
+  $("cAssessList").addEventListener("click", function(e){ var b = e.target.closest("[data-aedel]"); if(b) b.parentNode.remove(); });
   $("dAssess").addEventListener("click", function(){ openAssess(current); });
   $("fAssess").addEventListener("submit", function(ev){
     ev.preventDefault();
@@ -944,10 +990,11 @@ footer .wrap{border-top-color:var(--line)}
     if(!hm){ $("aErr").textContent = "Escribe tu nombre."; $("aHm").focus(); return; }
     if(!okMail(mail)){ $("aErr").textContent = "Revisa tu correo."; $("aMail").focus(); return; }
     if(!$("aTipo").value) return;
+    if(!$("aTiempo").value.trim()){ $("aErr").textContent = "Escribe el tiempo para realizarlo."; $("aTiempo").focus(); return; }
     $("aErr").textContent = ""; meSave(hm, mail, role);
     $("aSend").disabled = true; $("aSend").textContent = "Enviando…";
-    var a = assessList().filter(function(x){ return x.nombre === $("aTipo").value; })[0] || {};
-    api("request", {data:{id:c.id, tipo:"Assessment", assessment:$("aTipo").value, solicitante:hm, correo:mail, cargo:role, comentarios:$("aNotes").value.trim()}})
+    var a = {nombre:$("aTipo").value, tiempo:$("aTiempo").value.trim()};
+    api("request", {data:{id:c.id, tipo:"Assessment", assessment:a.nombre, tiempo:a.tiempo, solicitante:hm, correo:mail, cargo:role, comentarios:$("aNotes").value.trim()}})
     .then(function(){
       $("aDoneText").textContent = EN
         ? "TA received your assessment request for " + c.nombre + (a.tiempo ? " (" + a.tiempo + ")" : "") + ". They'll contact you to coordinate it."
@@ -972,7 +1019,7 @@ footer .wrap{border-top-color:var(--line)}
     if(!txt){ $("nErr").textContent = "Escribe la nota."; $("nText").focus(); return; }
     $("nErr").textContent = ""; meSave(hm, mail, role); $("nSend").disabled = true;
     api("note", {data:{id:c.id, solicitante:hm, correo:mail, cargo:role, tipoNota:$("nTipo").value, nota:txt}})
-    .then(function(){ $("dlgNote").close(); toast("Gracias, tu nota le llegó a TA."); }, function(e){ $("nErr").textContent = errText(e); })
+    .then(function(){ $("dlgNote").close(); toast("Gracias, tu nota quedó publicada."); refreshPublicThen(c.id); }, function(e){ $("nErr").textContent = errText(e); })
     .finally(function(){ $("nSend").disabled = false; });
   });
 
@@ -1217,7 +1264,7 @@ footer .wrap{border-top-color:var(--line)}
   $("btnSettings").addEventListener("click", function(){
     $("cEyebrow").value = C.eyebrow || ""; $("cTitleIn").value = C.title || ""; $("cSub").value = C.subtitle || "";
     $("cMails").value = (C.emails||[]).join(", ");
-    $("cAssess").value = C.assessmentsTexto != null ? C.assessmentsTexto : (C.assessments || []).map(function(a){ return a.nombre + (a.tiempo ? " | " + a.tiempo : ""); }).join("\n");
+    renderAssessEdit((C.assessments || []).map(function(a){ return a.nombre; }));
     $("cRevDias").value = C.revalidarDias || 30; $("cRevEst").value = C.revalidarEstados === "Disponible,En proceso" ? "Disponible,En proceso" : "En proceso";
     $("cRevMail").checked = C.revalidarCorreo !== "No";
     $("cPass").value = ""; $("cPass2").value = ""; $("cErr").textContent = "";
@@ -1236,7 +1283,7 @@ footer .wrap{border-top-color:var(--line)}
     var btn = $("fSettings").querySelector("[type=submit]"); btn.disabled = true;
     adminCall("saveConfig", {config:{eyebrow:$("cEyebrow").value.trim(), title:$("cTitleIn").value.trim() || "Pool de Supervisores", subtitle:$("cSub").value.trim(), emails:emails,
       revalidarDias:String(Math.max(1, Math.round(Number($("cRevDias").value) || 30))), revalidarEstados:$("cRevEst").value, revalidarCorreo:$("cRevMail").checked ? "Sí" : "No",
-      assessments:$("cAssess").value.split("\n").map(function(l){ return l.trim(); }).filter(String).join("\n")}})
+      assessments:Array.prototype.map.call($("cAssessList").querySelectorAll("input"), function(i){ return i.value.replace(/[|\n]/g," ").trim(); }).filter(String).join("\n")}})
       .then(function(){ return p1 ? adminCall("changePass", {pass:p1}) : null; })
       .then(function(){ $("dlgSettings").close(); toast(p1 ? "Configuración y contraseña guardadas." : "Configuración guardada."); }, function(e2){ $("cErr").textContent = errText(e2); })
       .finally(function(){ btn.disabled = false; });
