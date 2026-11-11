@@ -286,6 +286,7 @@ footer .wrap{border-top-color:var(--line)}
     <select id="fEstado" aria-label="Estado"></select>
     <select id="fPais" aria-label="País"><option value="">Todos los países</option></select>
     <select id="fCiudad" aria-label="Ciudad"><option value="">Todas las ciudades</option></select>
+    <select id="fNivel" aria-label="Nivel propuesto"><option value="">Todos los niveles</option><option value="Jr">Jr</option><option value="Specialist">Specialist</option><option value="Senior">Senior</option></select>
     <select id="fRec" class="admin-only" aria-label="Reclutador"><option value="">Todos los reclutadores</option></select>
     <button id="fTop" class="ftop" type="button" aria-pressed="false">★ Destacados</button>
     <button id="fCmp" class="ftop" type="button" aria-pressed="false">⇆ Comparar</button>
@@ -584,7 +585,7 @@ footer .wrap{border-top-color:var(--line)}
     "Talent Acquisition · Supervisores":"Talent Acquisition · Supervisors", "Pool de Supervisores":"Supervisor Pool",
     "Candidatos a supervisor pre-evaluados por TA. Revisa sus perfiles y solicita entrevista con el que te interese.":"Supervisor candidates pre-screened by TA. Review their profiles and request an interview with the ones you like.",
     "Buscar por nombre, ciudad o experiencia":"Search by name, city or experience", "Buscar":"Search", "Estado":"Status", "País":"Country",
-    "Ciudad":"City", "Reclutador":"Recruiter", "Todos los países":"All countries", "Todas las ciudades":"All cities",
+    "Ciudad":"City", "Reclutador":"Recruiter", "Todos los países":"All countries", "Todas las ciudades":"All cities", "Todos los niveles":"All levels",
     "Todos los reclutadores":"All recruiters", "Todos los estados":"All statuses", "Disponibles y en proceso":"Available and in process",
     "Disponibles":"Available", "Contratados":"Hired", "Total en el pool":"Total in the pool",
     "En modo TA ves también contratados, descartados y por revalidar.":"In TA mode you also see hired, discarded and to-revalidate candidates.",
@@ -833,13 +834,14 @@ footer .wrap{border-top-color:var(--line)}
     $("fCiudad").value = keep.c;
   }
   function filtered(){
-    var q = $("q").value.trim().toLowerCase(), pa = $("fPais").value, ci = $("fCiudad").value, es = $("fEstado").value, rc = $("fRec").value, tp = $("fTop").getAttribute("aria-pressed") === "true";
+    var q = $("q").value.trim().toLowerCase(), pa = $("fPais").value, ci = $("fCiudad").value, es = $("fEstado").value, rc = $("fRec").value, nv = $("fNivel").value, tp = $("fTop").getAttribute("aria-pressed") === "true";
     var ORDER = ["Disponible","En proceso","Revalidar","Contratado","Descartado"];
     return list().filter(function(c){
       if(es){ if(c.estado !== es) return false; }
       else if(!isAdmin() && VISIBLE.indexOf(c.estado) < 0) return false;
       if(isAdmin() && rc && c.reclutador !== rc) return false;
       if(tp && !isTop(c)) return false;
+      if(nv && c.nivel !== nv) return false;
       if(pa && c.pais !== pa) return false;
       if(ci && c.ciudad !== ci) return false;
       if(q && [c.nombre,c.ciudad,c.pais,c.resumen,c.ceipal,c.cedula].join(" ").toLowerCase().indexOf(q) < 0) return false;
@@ -1517,7 +1519,7 @@ footer .wrap{border-top-color:var(--line)}
   }
 
   // ---------- Eventos generales
-  ["q","fCiudad","fEstado","fRec"].forEach(function(id){ $(id).addEventListener("input", render); });
+  ["q","fCiudad","fEstado","fRec","fNivel"].forEach(function(id){ $(id).addEventListener("input", render); });
   $("fTop").addEventListener("click", function(){ var on = $("fTop").getAttribute("aria-pressed") !== "true"; $("fTop").setAttribute("aria-pressed", on); render(); });
   $("fPais").addEventListener("input", function(){ $("fCiudad").value = ""; refreshFilters(); render(); });
   $("grid").addEventListener("click", function(e){
