@@ -191,6 +191,8 @@ body.admin .hm-only{display:none !important}
 .eval-tag{font-size:12.5px;color:#0B4A9E;background:#EAF2FF;border:1px solid #CFE0FB;border-radius:8px;padding:5px 9px;align-self:flex-start;line-height:1.35}
 .eval-banner{flex-basis:100%;background:#EAF2FF;border:1px solid #CFE0FB;color:#0B4A9E;border-radius:10px;padding:9px 12px;font-size:14px;margin-top:10px}
 .r-Nota{background:#F1ECFB;color:#5B3BA8}
+.r-Cerrada{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.st-hint{font-size:13px;color:#0B4A9E;background:#EAF2FF;border:1px solid #CFE0FB;border-radius:8px;padding:8px 10px;margin-top:-4px}
 .ptag{display:inline-block;font-size:11.5px;font-weight:700;color:#0B4A9E;background:#EAF2FF;border-radius:6px;padding:1px 7px;margin-right:6px}
 .ptag.nota{color:#5B3BA8;background:#F1ECFB}
 .money{display:flex;gap:6px}.money select{width:96px;flex:none}.money input{flex:1;min-width:0}
@@ -478,6 +480,7 @@ footer .wrap{border-top-color:var(--line)}
       <div class="row"><label>Nombre<input id="eNombre"></label><label>CEIPAL Applicant ID<input id="eCeipal" placeholder="Ej. 123456"></label></div>
       <div class="row"><label>Número de documento<input id="eCedula" placeholder="Sin puntos ni espacios"></label><span></span></div>
       <div class="row"><label>Estado<select id="eEstado"></select></label><label>Fecha de ingreso al pool<input id="eIngreso" type="date"></label></div>
+      <p class="st-hint" id="eStHint" hidden></p>
       <div class="row"><label>País<input id="ePais" placeholder="Colombia"></label><label>Ciudad<input id="eCiudad" placeholder="Barranquilla"></label></div>
       <div class="row"><label>Modalidad<select id="eModalidad"></select></label><label>Disponibilidad<input id="eDisp" placeholder="2 semanas"></label></div>
       <div class="row"><label>Inglés (prueba)<select id="eIngles"></select></label><label>Expectativa salarial total<span class="money"><select id="eMoneda" aria-label="Moneda"></select><input id="eExp" type="number" min="0" step="1" aria-label="Valor"></span></label></div>
@@ -661,7 +664,7 @@ footer .wrap{border-top-color:var(--line)}
     "Para qué vacante o qué te gustaría validar":"Which vacancy or what you'd like to assess", "Tipo":"Type", "Recomendación":"Recommendation",
     "Nota":"Note", "Enviar nota":"Send note", "Ej. Lo recomiendo para la cuenta X: buen manejo de equipo y KPIs.":"E.g. I recommend them for account X: strong team and KPI management.",
     "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"The note goes to the TA team and is saved in the candidate's history. Other coordinators can't see it.",
-    "Escribe la nota.":"Write the note.", "Comparar":"Compare", "⇆ Comparar":"⇆ Compare", "Comparar candidatos":"Compare candidates", "Limpiar selección":"Clear selection", "Limpiar":"Clear",
+    "Escribe la nota.":"Write the note.", "Cerrada":"Closed", "Comparar":"Compare", "⇆ Comparar":"⇆ Compare", "Comparar candidatos":"Compare candidates", "Limpiar selección":"Clear selection", "Limpiar":"Clear",
     "Quitar de la comparación":"Remove from comparison", "Por qué este nivel":"Why this level", "Resumen":"Summary", "Sin notas":"No notes", "nota":"note", "notas":"notes", "Notas de hiring managers":"Hiring manager notes", "Gracias, tu nota quedó publicada.":"Thanks, your note was posted.",
     "Todavía no hay notas. ¿Lo conoces? Deja una recomendación o feedback.":"No notes yet. Know this candidate? Leave a recommendation or feedback.",
     "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"Other coordinators will see the note on the candidate's profile, and it's also sent to the TA team.", "Gracias, tu nota le llegó a TA.":"Thanks, your note was sent to TA.",
@@ -881,7 +884,7 @@ footer .wrap{border-top-color:var(--line)}
         (isAdmin() ? revalPill(c) : '') +
         (isAdmin() && np ? '<span class="pill" style="background:var(--bg);color:var(--muted)">Presentado '+np+'×</span>' : '') +
         (isAdmin() && c.estado === "Contratado" && (c.nivelContratado || c.fechaContratacion) ? '<span class="pill st-Contratado" style="white-space:normal">Seniority final: '+esc(c.nivelContratado||c.nivel||"—")+(c.nivelContratado && c.nivel && c.nivelContratado !== c.nivel ? ' (propuesto: '+esc(c.nivel)+')' : '')+(c.fechaContratacion?' · '+fmtDate(c.fechaContratacion):'')+'</span>' : '') + '</div>' +
-        (c.evaluadoPor && VISIBLE.indexOf(c.estado) >= 0 ? '<div class="eval-tag">En evaluación por <b data-notr>'+esc(c.evaluadoPor)+'</b></div>' : '') +
+        (c.evaluadoPor && c.estado === "En proceso" ? '<div class="eval-tag">En evaluación por <b data-notr>'+esc(c.evaluadoPor)+'</b></div>' : '') +
         (isAdmin() ? '<div class="rec-tag'+(c.reclutador?'':' none')+'">'+(c.reclutador ? 'Reclutador: <b>'+esc(c.reclutador)+'</b>' : 'Sin reclutador asignado')+'</div>' +
           '<div class="ids">'+(c.ceipal ? 'CEIPAL <b>'+esc(c.ceipal)+'</b>' : '<span class="miss">Sin CEIPAL ID</span>')+' · '+(c.cedula ? 'Doc. <b>'+esc(c.cedula)+'</b>' : '<span class="miss">Sin documento</span>')+'</div>' : '') +
         '<dl class="facts"><div><dt>Inglés</dt><dd>'+esc(c.ingles||"—")+'</dd></div><div><dt>Disponibilidad</dt><dd>'+esc(c.disponibilidad||"—")+'</dd></div>' +
@@ -905,7 +908,7 @@ footer .wrap{border-top-color:var(--line)}
     $("dSub").textContent = (isAdmin() ? ["CEIPAL " + (c.ceipal || "—"), "Doc. " + (c.cedula || "—")].join(" · ") + " · e" : "E") + "n el pool desde el " + fmtDate(c.ingreso);
     $("dPills").innerHTML = (isTop(c) ? '<span class="pill toppill">★ TOP</span>' : '') + '<span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' +
       (isTop(c) ? '<div class="top-banner" style="flex-basis:100%">★ Candidato destacado: TA recomienda priorizarlo.</div>' : '') +
-      (c.evaluadoPor && VISIBLE.indexOf(c.estado) >= 0 ? '<div class="eval-banner">En evaluación por <b data-notr>'+esc(c.evaluadoPor)+'</b></div>' : '');
+      (c.evaluadoPor && c.estado === "En proceso" ? '<div class="eval-banner">En evaluación por <b data-notr>'+esc(c.evaluadoPor)+'</b></div>' : '');
     $("dFacts").innerHTML = [
       ["Ubicación", (loc(c)||"—") + (c.modalidad ? " · " + c.modalidad : "")],
       ["Disponibilidad", c.disponibilidad||"—"],
@@ -1116,7 +1119,7 @@ footer .wrap{border-top-color:var(--line)}
         (isTop(c) ? '<div style="margin-top:8px"><span class="pill toppill">★ TOP</span></div>' : '') + '</th>';
     }).join("") + '</tr></thead><tbody>';
     html += row("Nivel propuesto", function(c){ return '<span class="'+lvClass(c.nivel)+'">'+esc(c.nivel||"Sin nivel")+'</span>'; });
-    html += row("Estado", function(c){ return '<span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' + (c.evaluadoPor && VISIBLE.indexOf(c.estado) >= 0 ? '<div class="sm" style="margin-top:6px">En evaluación por <b data-notr>'+esc(c.evaluadoPor)+'</b></div>' : ''); });
+    html += row("Estado", function(c){ return '<span class="'+stClass(c.estado)+'">'+esc(c.estado)+'</span>' + (c.evaluadoPor && c.estado === "En proceso" ? '<div class="sm" style="margin-top:6px">En evaluación por <b data-notr>'+esc(c.evaluadoPor)+'</b></div>' : ''); });
     html += row("Inglés (prueba)", function(c){ return '<span class="'+(engRank(c.ingles) === maxEng && maxEng >= 0 ? 'best' : '')+'">'+esc(c.ingles||"—")+'</span>'; });
     html += row("Expectativa total", function(c){ var n = Number(c.expectativa)||0; return '<span class="'+(minExp && n === minExp ? 'best' : '')+'">'+money(c.expectativa, c.moneda)+'</span>'; });
     html += row("Disponibilidad", function(c){ return esc(c.disponibilidad||"—"); });
@@ -1200,7 +1203,7 @@ footer .wrap{border-top-color:var(--line)}
         '<div class="pres-acts"><button class="linkbtn" type="button" data-editpres="'+esc(p.pid)+'">Editar</button><button class="linkbtn" type="button" data-delpres="'+esc(p.pid)+'">Eliminar</button></div></div>';
     }).join("") : '<p class="muted" style="margin:0;font-size:14px">Todavía no ha sido presentado a ninguna posición.</p>';
   }
-  var RESULTADOS = ["Pendiente feedback","Avanza","No seleccionado","Contratado"];
+  var RESULTADOS = ["Pendiente feedback","Avanza","No seleccionado","Cerrada","Contratado"];
   function presEditForm(p, c){
     var opt = function(list, v){ return list.map(function(o){ return '<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>'; }).join(""); };
     var hired = p.resultado === "Contratado";
@@ -1288,7 +1291,11 @@ footer .wrap{border-top-color:var(--line)}
     $("dlgEdit").showModal();
   }
   function toggleHire(){
-    var on = $("eEstado").value === "Contratado";
+    var on = $("eEstado").value === "Contratado", ne = $("eEstado").value;
+    var who = editing && editing.estado === "En proceso" && ne !== "En proceso" && ne !== "Contratado" ? (editing.evaluadoPor || "") : "";
+    $("eStHint").hidden = !who;
+    if(who) $("eStHint").textContent = EN ? "When you save, the open requests from " + who + " will be closed and the coordinators will no longer see “Being evaluated by”."
+      : "Al guardar se cerrarán las solicitudes abiertas de " + who + " y los coordinadores ya no verán “En evaluación por”.";
     if(on){ if(!$("eFContr").value) $("eFContr").value = today(); if(!$("eNivContr").value) $("eNivContr").value = $("eNivel").value; }
   }
   $("eEstado").addEventListener("change", toggleHire);
