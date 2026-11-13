@@ -191,6 +191,15 @@ body.admin .hm-only{display:none !important}
 .eval-tag{font-size:12.5px;color:#0B4A9E;background:#EAF2FF;border:1px solid #CFE0FB;border-radius:8px;padding:5px 9px;align-self:flex-start;line-height:1.35}
 .eval-banner{flex-basis:100%;background:#EAF2FF;border:1px solid #CFE0FB;color:#0B4A9E;border-radius:10px;padding:9px 12px;font-size:14px;margin-top:10px}
 .r-Nota{background:#F1ECFB;color:#5B3BA8}
+.audio-up{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.audio-up .lbl{font-size:14px;font-weight:600}
+.audio-up .lbl small{font-weight:400;color:var(--muted)}
+.audio-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.audio-row .muted{font-size:14px;min-width:0;overflow-wrap:anywhere}
+.audio-box{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.audio-box iframe{display:block;width:100%;height:120px;border:0;background:var(--bg)}
+.audio-box a{display:block;padding:8px 12px;font-size:13px;border-top:1px solid var(--line)}
+.audio-tag{font-size:12.5px;color:var(--accent)}
 .r-Cerrada{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
 .st-hint{font-size:13px;color:#0B4A9E;background:#EAF2FF;border:1px solid #CFE0FB;border-radius:8px;padding:8px 10px;margin-top:-4px}
 .ptag{display:inline-block;font-size:11.5px;font-weight:700;color:#0B4A9E;background:#EAF2FF;border-radius:6px;padding:1px 7px;margin-right:6px}
@@ -342,6 +351,10 @@ footer .wrap{border-top-color:var(--line)}
     </div>
     <h3>CV</h3>
     <div class="docs" id="dLinks"></div>
+    <div id="dAudioBox" hidden>
+      <h3>Audio del candidato</h3>
+      <div class="audio-box"><iframe id="dAudio" title="Audio del candidato" loading="lazy" allow="autoplay"></iframe><a id="dAudioLink" href="#" target="_blank" rel="noopener">Abrir en Drive</a></div>
+    </div>
     <h3>Notas de hiring managers</h3>
     <div class="notes" id="dNotes"></div>
     <div class="admin-only">
@@ -491,6 +504,12 @@ footer .wrap{border-top-color:var(--line)}
       <div class="row" id="eHireRow"><label>Fecha de contratación <small>(si quedó contratado)</small><input id="eFContr" type="date"></label><label>Seniority final <small>(con el que quedó contratado)</small><select id="eNivContr"></select></label></div>
       <label>Resumen de experiencia (3–4 líneas)<textarea id="eResumen" rows="4"></textarea></label>
       <div class="row"><label>Link del CV<input id="eCv" type="url" placeholder="https://..."></label></div>
+      <div class="audio-up">
+        <span class="lbl">Audio del candidato <small>(opcional · mp3, m4a, wav, ogg · máx. 15 MB)</small></span>
+        <div class="audio-row"><button class="btn small" type="button" id="eAudioBtn">Subir audio</button><span id="eAudioName" class="muted">Sin audio</span><button class="btn small" type="button" id="eAudioDel" hidden>Quitar</button></div>
+        <input type="file" id="eAudioFile" accept="audio/*,.mp3,.m4a,.wav,.ogg,.opus,.aac" hidden>
+        <input type="hidden" id="eAudio">
+      </div>
       <div class="err" id="eErr" role="alert"></div>
     </div>
     <div class="dlg-foot">
@@ -664,7 +683,10 @@ footer .wrap{border-top-color:var(--line)}
     "Para qué vacante o qué te gustaría validar":"Which vacancy or what you'd like to assess", "Tipo":"Type", "Recomendación":"Recommendation",
     "Nota":"Note", "Enviar nota":"Send note", "Ej. Lo recomiendo para la cuenta X: buen manejo de equipo y KPIs.":"E.g. I recommend them for account X: strong team and KPI management.",
     "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"The note goes to the TA team and is saved in the candidate's history. Other coordinators can't see it.",
-    "Escribe la nota.":"Write the note.", "Cerrada":"Closed", "Comparar":"Compare", "⇆ Comparar":"⇆ Compare", "Comparar candidatos":"Compare candidates", "Limpiar selección":"Clear selection", "Limpiar":"Clear",
+    "Escribe la nota.":"Write the note.", "Audio del candidato":"Candidate audio", "(opcional · mp3, m4a, wav, ogg · máx. 15 MB)":"(optional · mp3, m4a, wav, ogg · max 15 MB)",
+    "Subir audio":"Upload audio", "Sin audio":"No audio", "Abrir en Drive":"Open in Drive", "♪ Tiene audio":"♪ Has audio", "▶ Escuchar":"▶ Listen", "Audio":"Audio",
+    "El archivo no es un audio. Usa mp3, m4a, wav u ogg.":"The file isn't audio. Use mp3, m4a, wav or ogg.", "El audio pesa más de 15 MB. Usa uno más corto.":"The audio is over 15 MB. Use a shorter one.",
+    "Falta dar el permiso de Drive: en Apps Script ejecuta una vez la función activarAudios.":"Drive permission is missing: in Apps Script, run the activarAudios function once.", "Cerrada":"Closed", "Comparar":"Compare", "⇆ Comparar":"⇆ Compare", "Comparar candidatos":"Compare candidates", "Limpiar selección":"Clear selection", "Limpiar":"Clear",
     "Quitar de la comparación":"Remove from comparison", "Por qué este nivel":"Why this level", "Resumen":"Summary", "Sin notas":"No notes", "nota":"note", "notas":"notes", "Notas de hiring managers":"Hiring manager notes", "Gracias, tu nota quedó publicada.":"Thanks, your note was posted.",
     "Todavía no hay notas. ¿Lo conoces? Deja una recomendación o feedback.":"No notes yet. Know this candidate? Leave a recommendation or feedback.",
     "La nota la verán los demás coordinadores en el perfil del candidato, y también le llega al equipo de TA.":"Other coordinators will see the note on the candidate's profile, and it's also sent to the TA team.", "Gracias, tu nota le llegó a TA.":"Thanks, your note was sent to TA.",
@@ -890,6 +912,7 @@ footer .wrap{border-top-color:var(--line)}
         '<dl class="facts"><div><dt>Inglés</dt><dd>'+esc(c.ingles||"—")+'</dd></div><div><dt>Disponibilidad</dt><dd>'+esc(c.disponibilidad||"—")+'</dd></div>' +
         '<div><dt>Expectativa total</dt><dd>'+money(c.expectativa, c.moneda)+'</dd></div><div><dt>Modalidad</dt><dd>'+esc(c.modalidad||"—")+'</dd></div></dl>' +
         '<p class="summary" data-notr>'+esc(c.resumen||"")+'</p>' +
+        (audioId(c.audio) ? '<span class="audio-tag">♪ Tiene audio</span>' : '') +
         ((c.notas||[]).length ? '<span class="note-count">✎ '+(c.notas.length === 1 ? '1 nota de hiring manager' : c.notas.length + ' notas de hiring managers')+'</span>' : '') +
         '<label class="cmp"><input type="checkbox" data-cmp="'+esc(c.id)+'"'+(inCmp ? ' checked' : '')+'> Comparar</label>' +
         '<div class="actions"><button class="btn" type="button" data-view="'+esc(c.id)+'">Ver perfil</button>' +
@@ -926,6 +949,10 @@ footer .wrap{border-top-color:var(--line)}
                  : '<div class="doc empty-doc"><span class="lbl">'+label+'</span><span class="none">Sin link todavía</span></div>';
     };
     $("dLinks").innerHTML = doc("Hoja de vida", c.cv, "Ver CV");
+    var aid = audioId(c.audio);
+    $("dAudioBox").hidden = !aid;
+    if(aid){ var src = "https://drive.google.com/file/d/" + aid + "/preview"; if($("dAudio").getAttribute("src") !== src) $("dAudio").setAttribute("src", src); $("dAudioLink").href = "https://drive.google.com/file/d/" + aid + "/view"; }
+    else $("dAudio").removeAttribute("src");
     var ns = c.notas || [];
     $("dNotes").innerHTML = ns.length ? ns.map(function(n){
       var rec = n.tipo === "Recomendación";
@@ -1125,6 +1152,7 @@ footer .wrap{border-top-color:var(--line)}
     html += row("Disponibilidad", function(c){ return esc(c.disponibilidad||"—"); });
     html += row("Modalidad", function(c){ return esc(c.modalidad||"—"); });
     html += row("Restricciones horarias", function(c){ return esc(c.horario||"Ninguna"); });
+    html += row("Audio", function(c){ var a = audioId(c.audio); return a ? '<a href="https://drive.google.com/file/d/'+esc(a)+'/view" target="_blank" rel="noopener">▶ Escuchar</a>' : '<span class="sm">Sin audio</span>'; });
     html += row("Resumen", function(c){ return '<span class="sm" data-notr>'+esc(c.resumen||"—")+'</span>'; });
     html += row("Notas de hiring managers", function(c){
       var ns = c.notas || [];
@@ -1150,6 +1178,46 @@ footer .wrap{border-top-color:var(--line)}
     if(b.dataset.cmpview) openDetail(byId(id)); else if(b.dataset.cmpsched) openSched(byId(id)); else openAssess(byId(id));
   });
   $("grid").addEventListener("change", function(e){ if(e.target.dataset && e.target.dataset.cmp) toggleCmp(e.target.dataset.cmp, e.target.checked); });
+
+
+  // ---------- Audio del candidato (se sube al Drive de TA desde el formulario)
+  function audioId(v){ var m = String(v||"").match(/\/d\/([\w-]{20,})/) || String(v||"").match(/[?&]id=([\w-]{20,})/) || String(v||"").match(/^([\w-]{20,})$/); return m ? m[1] : ""; }
+  var AUDIO_MAX = 15 * 1024 * 1024, audioBusy = false;
+  function audioState(id, msg){
+    $("eAudio").value = id || "";
+    $("eAudioName").textContent = msg || (id ? (EN ? "Audio uploaded" : "Audio cargado") : (EN ? "No audio" : "Sin audio"));
+    $("eAudioDel").hidden = !id;
+    $("eAudioBtn").textContent = id ? (EN ? "Replace audio" : "Cambiar audio") : (EN ? "Upload audio" : "Subir audio");
+  }
+  $("eAudioBtn").addEventListener("click", function(){ if(!audioBusy) $("eAudioFile").click(); });
+  $("eAudioDel").addEventListener("click", function(){ audioState(""); });
+  $("eAudioFile").addEventListener("change", function(){
+    var f = this.files && this.files[0]; this.value = "";
+    if(!f) return;
+    var okType = /^audio\//.test(f.type) || /\.(mp3|m4a|wav|ogg|opus|aac|webm|amr)$/i.test(f.name);
+    if(!okType){ $("eErr").textContent = "El archivo no es un audio. Usa mp3, m4a, wav u ogg."; return; }
+    if(f.size > AUDIO_MAX){ $("eErr").textContent = "El audio pesa más de 15 MB. Usa uno más corto."; return; }
+    $("eErr").textContent = ""; audioBusy = true;
+    var save = $("fEdit").querySelector('button[type=submit]'); save.disabled = true;
+    $("eAudioName").textContent = (EN ? "Uploading " : "Subiendo ") + f.name + "…";
+    var mime = f.type || ({mp3:"audio/mpeg", m4a:"audio/mp4", wav:"audio/wav", ogg:"audio/ogg", opus:"audio/ogg", aac:"audio/aac", webm:"audio/webm", amr:"audio/amr"})[f.name.split(".").pop().toLowerCase()] || "audio/mpeg";
+    var fr = new FileReader();
+    fr.onload = function(){
+      var b64 = String(fr.result).split(",")[1] || "";
+      var nombre = ($("eNombre").value.trim() || "candidato") + " · " + f.name;
+      api("uploadAudio", {audio:{data:b64, mime:mime, nombre:nombre}}).then(function(j){
+        audioState(j.fileId, (EN ? "Uploaded: " : "Cargado: ") + f.name);
+        if(j.compartido === false) toast(EN ? "Uploaded, but Drive didn't allow sharing it by link. Share it from Drive so coordinators can listen." : "Se subió, pero Drive no dejó compartirlo por link. Compártelo desde Drive para que los coordinadores lo puedan escuchar.", true);
+        else toast(EN ? "Audio uploaded. Save the candidate to keep it." : "Audio cargado. Guarda el candidato para que quede en su perfil.");
+      }, function(e){
+        if(e && e.error === "auth"){ toast("Tu sesión TA expiró. Vuelve a entrar.", true); leaveAdmin(); return; }
+        $("eAudioName").textContent = $("eAudio").value ? (EN ? "Audio uploaded" : "Audio cargado") : (EN ? "No audio" : "Sin audio");
+        $("eErr").textContent = /DriveApp|permission|permiso|authoriz/i.test(errText(e)) ? "Falta dar el permiso de Drive: en Apps Script ejecuta una vez la función activarAudios." : errText(e);
+      }).finally(function(){ audioBusy = false; save.disabled = false; });
+    };
+    fr.onerror = function(){ audioBusy = false; save.disabled = false; $("eErr").textContent = "No pude leer el archivo."; };
+    fr.readAsDataURL(f);
+  });
 
   // ---------- Acceso TA
   var setupMode = false;
@@ -1284,7 +1352,7 @@ footer .wrap{border-top-color:var(--line)}
       if(el.tagName === "SELECT" && v && !Array.prototype.some.call(el.options, function(o){ return o.value === v; })) el.insertAdjacentHTML("beforeend", "<option>"+esc(v)+"</option>");
       el.value = v;
     });
-    $("eTop").checked = isTop(x);
+    $("eTop").checked = isTop(x); audioState(audioId(x.audio));
     toggleHire();
     $("eErr").textContent = ""; $("eDelete").hidden = !c; $("eDelete").textContent = "Eliminar"; $("eDelete").dataset.confirm = "";
     if($("dlgDetail").open) $("dlgDetail").close();
@@ -1313,7 +1381,7 @@ footer .wrap{border-top-color:var(--line)}
     var cand = {originalId: editing ? editing.id : "", ceipal:$("eCeipal").value.trim(), cedula:$("eCedula").value.replace(/[\s.,\-]/g,""), nombre:nombre, estado:$("eEstado").value, ingreso:$("eIngreso").value,
       pais:$("ePais").value.trim(), ciudad:$("eCiudad").value.trim(), modalidad:$("eModalidad").value, disponibilidad:$("eDisp").value.trim(),
       ingles:$("eIngles").value, expectativa:$("eExp").value, nivel:$("eNivel").value, resumen:$("eResumen").value.trim(),
-      cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(), top:$("eTop").checked ? "Sí" : "", moneda:$("eMoneda").value, horario:$("eHorario").value.trim(),
+      cv:$("eCv").value.trim(), reclutador:$("eRec").value.trim(), top:$("eTop").checked ? "Sí" : "", moneda:$("eMoneda").value, horario:$("eHorario").value.trim(), audio:$("eAudio").value,
       fechaContratacion: $("eEstado").value === "Contratado" ? $("eFContr").value : "", nivelContratado: $("eEstado").value === "Contratado" ? $("eNivContr").value : ""};
     try { if(cand.reclutador) localStorage.setItem("pool-rec", cand.reclutador); } catch(e3){}
     adminCall("saveCandidate", {candidate:cand}).then(function(){ $("dlgEdit").close(); toast("Guardado."); }, function(e2){ $("eErr").textContent = errText(e2); })
@@ -1485,7 +1553,7 @@ footer .wrap{border-top-color:var(--line)}
       "Estado": c.estado || "", "Destacado": isTop(c) ? "Sí" : "", "Reclutador": c.reclutador || "", "Nivel propuesto": c.nivel || "", "Seniority final": c.nivelContratado || "",
       "Fecha de ingreso": c.ingreso || "", "Fecha del estado": c.fechaEstado || "", "Fecha de contratación": c.fechaContratacion || "", "País": c.pais || "", "Ciudad": c.ciudad || "",
       "Modalidad": c.modalidad || "", "Disponibilidad": c.disponibilidad || "", "Inglés": c.ingles || "", "Expectativa total": Number(c.expectativa) || "", "Moneda": c.moneda || "COP", "Restricciones horarias": c.horario || "",
-      "Resumen de experiencia": c.resumen || "", "Link CV": c.cv || "", "ID interno": c.id || ""
+      "Resumen de experiencia": c.resumen || "", "Link CV": c.cv || "", "Audio": audioId(c.audio) ? "https://drive.google.com/file/d/" + audioId(c.audio) + "/view" : "", "ID interno": c.id || ""
     }; });
     var ws = XLSX.utils.json_to_sheet(rows);
     ws["!cols"] = Object.keys(rows[0]).map(function(k){ return {wch: /Resumen|Por qué|Link/.test(k) ? 40 : Math.max(12, k.length + 2)}; });
